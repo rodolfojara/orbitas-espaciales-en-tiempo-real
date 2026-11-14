@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
 
 RE_KM = 6371.0
@@ -150,6 +151,37 @@ def interplanetary(bodies, trajectory=None, title="Diagrama interplanetario (ecl
         sp.set_color("gray")
     fig.tight_layout()
     fig.savefig(path, dpi=140, facecolor="#0b1020")
+    plt.close(fig)
+
+
+def plot_orbit_3d(r_eci, title, path, show_earth=True):
+    """Dibuja una órbita 3D en ECI (r_eci en metros, array (N,3))."""
+    r = np.asarray(r_eci, dtype=float) / 1e3  # km
+    fig = plt.figure(figsize=(9, 8))
+    ax = fig.add_subplot(111, projection="3d")
+    if show_earth:
+        # Esfera terrestre
+        u = np.linspace(0, 2 * np.pi, 40)
+        v = np.linspace(0, np.pi, 20)
+        xs = RE_KM * np.outer(np.cos(u), np.sin(v))
+        ys = RE_KM * np.outer(np.sin(u), np.sin(v))
+        zs = RE_KM * np.outer(np.ones_like(u), np.cos(v))
+        ax.plot_surface(xs, ys, zs, color="#2a6f9b", alpha=0.25, linewidth=0)
+    ax.plot(r[:, 0], r[:, 1], r[:, 2], color="#ff5555", lw=1.5, label="órbita")
+    ax.scatter([r[0, 0]], [r[0, 1]], [r[0, 2]], color="green", s=40, label="inicio")
+    ax.scatter([r[-1, 0]], [r[-1, 1]], [r[-1, 2]], color="red", s=40, label="fin")
+    # ejes
+    maxr = max(np.max(np.abs(r)), RE_KM) * 1.1
+    ax.set_xlim(-maxr, maxr)
+    ax.set_ylim(-maxr, maxr)
+    ax.set_zlim(-maxr, maxr)
+    ax.set_xlabel("x (km, ECI)")
+    ax.set_ylabel("y (km, ECI)")
+    ax.set_zlabel("z (km, ECI)")
+    ax.set_title(title)
+    ax.legend(fontsize=8)
+    fig.tight_layout()
+    fig.savefig(path, dpi=140)
     plt.close(fig)
 
 

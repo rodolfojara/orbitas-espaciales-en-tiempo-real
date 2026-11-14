@@ -122,6 +122,19 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   python examples/run_escapade.py
   ```
 
+- **Modelo 3D con rotación terrestre** (`src/orbitas_rt/orbit3d.py`): propagación ECI con
+  gravedad + J2 y conversión a geodésicas considerando la rotación terrestre (GMST).
+  Genera una órbita 3D y su huella en tierra:
+  ```bash
+  python examples/run_orbit3d.py
+  ```
+
+- **Visualización web (Leaflet)**: mapa interactivo de la huella en tierra, autocontenido
+  (abre el HTML en cualquier navegador):
+  ```bash
+  python examples/run_web_ground_track.py
+  ```
+
 ## Limitaciones (léelas antes de usarlo con datos reales)
 
 - **Altitud y rapidez no bastan para fijar la distancia recorrida.** Esta se
