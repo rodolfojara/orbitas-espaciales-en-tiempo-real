@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "orbitas-espaciales-en-tiempo-real"
+version = "0.1.0"
+description = "Estimación en tiempo real de la trayectoria de una nave con filtro de Kalman extendido, incluso cuando se corta la transmisión."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = ["numpy>=1.24", "matplotlib>=3.7"]
+
+[project.optional-dependencies]
+ocr = ["opencv-python", "easyocr"]
+dev = ["pytest"]
+
+[project.scripts]
+orbitas-rt = "orbitas_rt.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+orbitas_rt = ["sources.json"]

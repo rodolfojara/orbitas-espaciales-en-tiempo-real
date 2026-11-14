@@ -1,0 +1,285 @@
+{
+  "meta": {
+    "updated": "2026-11-14",
+    "legend": {
+      "verificada": "la existencia y el uso descrito se confirmaron con una búsqueda web el día indicado en 'checked'",
+      "sin verificar": "viene de conocimiento previo; confirmar URL, formato y condiciones antes de depender de ella"
+    }
+  },
+  "sources": [
+    {
+      "id": "webcast_overlay",
+      "name": "Overlay del webcast oficial de SpaceX (altitud, velocidad, T+)",
+      "url": "https://www.spacex.com/launches/",
+      "missions": ["starship"],
+      "measures": ["altitud", "rapidez", "tiempo T+"],
+      "latency": "~1 s (mientras dure la transmisión)",
+      "access": "gratis, solo video; requiere leer los números (OCR) o transcribirlos a mano",
+      "pros": [
+        "Es la fuente oficial y la que ya usa el modelo del proyecto (altitud y rapidez)",
+        "Cadencia de ~1 Hz, suficiente para el filtro",
+        "No necesita equipo ni cuenta"
+      ],
+      "cons": [
+        "Se pierde justo cuando se cae la transmisión (el problema que queremos resolver)",
+        "Solo altitud y rapidez: no entrega posición, así que la distancia recorrida se infiere con el modelo",
+        "Los valores son enteros (km, km/h) y el OCR puede equivocarse",
+        "No está documentado si la velocidad es respecto de la superficie o inercial"
+      ],
+      "use_in_project": "Entrada principal del filtro (medición [altitud, rapidez]). Módulo experimental: orbitas_rt.ocr",
+      "status": "sin verificar",
+      "checked": null
+    },
+    {
+      "id": "spaceflightnow_tracker",
+      "name": "Spaceflight Now - Starship live tracker / Orbital Tracker",
+      "url": "https://spaceflightnow.com/tracker/",
+      "missions": ["starship"],
+      "measures": ["altitud", "rapidez", "tiempo", "traza sobre el mapa (ground track)"],
+      "latency": "sin documentar",
+      "access": "gratis, página web; no se encontró API pública documentada",
+      "pros": [
+        "Ya muestra altitud, rapidez, tiempo y traza (voladas y predichas) en un mapa",
+        "Sirve como referencia independiente para comparar con la estimación propia"
+      ],
+      "cons": [
+        "Es de terceros: no se sabe de dónde saca los datos (probablemente la misma telemetría del webcast)",
+        "Si el webcast deja de informar, es probable que ellos también",
+        "Sin API documentada: usarla en el filtro implicaría raspar la página, que puede cambiar o estar prohibido"
+      ],
+      "use_in_project": "Solo contraste manual por ahora",
+      "status": "verificada",
+      "checked": "2026-11-14"
+    },
+    {
+      "id": "faa_notam_hazard_areas",
+      "name": "FAA / avisos a navegantes (NOTAM, avisos marítimos) y zonas de peligro del vuelo",
+      "url": "https://www.faa.gov/space",
+      "missions": ["starship"],
+      "measures": ["corredor y ventana nominal del vuelo", "zona de reentrada y amerizaje"],
+      "latency": "previa al vuelo (estático)",
+      "access": "gratis",
+      "pros": [
+        "Entregan la ruta y las zonas de reentrada planificadas, con anticipación",
+        "Permiten construir la trayectoria nominal por tiempo T+ (referencia cuando no hay datos)"
+      ],
+      "cons": [
+        "No son tiempo real: dicen dónde debería ir, no dónde está",
+        "Las zonas son anchas y no dan altitud ni velocidad por instante",
+        "Cambian si se reprograma el vuelo"
+      ],
+      "use_in_project": "Define la trayectoria nominal y el acimut (geo.py) en lugar de los valores de ejemplo",
+      "status": "sin verificar",
+      "checked": null
+    },
+    {
+      "id": "spacex_flight_profile",
+      "name": "Perfil de vuelo publicado por SpaceX (cronología de eventos por T+)",
+      "url": "https://www.spacex.com/launches/",
+      "missions": ["starship"],
+      "measures": ["eventos nominales (separación, apagado, reentrada) con tiempo T+"],
+      "latency": "previa al vuelo (estático)",
+      "access": "gratis",
+      "pros": [
+        "Da hitos de tiempo para calibrar VehicleParams (duración del encendido, etc.)",
+        "Útil para saber cuándo esperar un apagón de comunicaciones"
+      ],
+      "cons": [
+        "Nominal: no refleja anomalías ni cambios de último minuto",
+        "Sin valores numéricos suficientes para un modelo de empuje fino"
+      ],
+      "use_in_project": "Ajuste de parámetros del modelo nominal",
+      "status": "sin verificar",
+      "checked": null
+    },
+    {
+      "id": "visual_cross_check",
+      "name": "Cámaras públicas y observadores (transmisiones de terceros, cámaras del sitio de lanzamiento)",
+      "url": "",
+      "missions": ["starship"],
+      "measures": ["confirmación visual de eventos (despegue, separación, anomalías)"],
+      "latency": "tiempo real, manual",
+      "access": "gratis, varía según el canal",
+      "pros": [
+        "Independiente del webcast oficial",
+        "Sirve para fijar el instante T+0 y confirmar si hubo una anomalía"
+      ],
+      "cons": [
+        "No entrega coordenadas ni cifras; es manual",
+        "Disponible solo cerca del sitio y solo durante parte del vuelo"
+      ],
+      "use_in_project": "Ancla de tiempo (T+0) y verificación humana",
+      "status": "sin verificar",
+      "checked": null
+    },
+    {
+      "id": "jpl_horizons",
+      "name": "JPL Horizons (efemérides y vectores de estado)",
+      "url": "https://ssd.jpl.nasa.gov/horizons/",
+      "missions": ["artemis", "deep_space"],
+      "measures": ["estado completo (posición y velocidad)", "efemérides pasadas y predichas"],
+      "latency": "bajo demanda; depende de cuándo NASA/JPL publique la trayectoria de la misión",
+      "access": "gratis, sin registro; interfaz web y API",
+      "pros": [
+        "Fuente oficial de la trayectoria de Orion: en Artemis II se usó para reconstruir su trayectoria real",
+        "Entrega el estado completo, que es justo el estado inicial que necesita el propagador",
+        "También cubre sondas, planetas y la Luna para el modelo de N cuerpos"
+      ],
+      "cons": [
+        "Una misión solo aparece cuando JPL la publica: para Artemis III aún no hay efemérides (la misión no ha volado)",
+        "Predicho y reconstruido difieren; tras una maniobra el dato se actualiza con retraso",
+        "Hay que respetar las condiciones de uso de la API (límite de consultas sin documentar aquí)"
+      ],
+      "use_in_project": "Estado inicial y verdad de referencia para el modo espacio profundo (en la hoja de ruta)",
+      "status": "verificada",
+      "checked": "2026-11-14"
+    },
+    {
+      "id": "nasa_arow",
+      "name": "NASA AROW (Artemis Real-time Orbit Website)",
+      "url": "https://www.nasa.gov/trackartemis",
+      "missions": ["artemis"],
+      "measures": ["posición", "velocidad", "distancia a la Tierra y a la Luna", "tiempo de misión", "vectores de estado y archivo de efemérides descargable"],
+      "latency": "casi tiempo real; se alimenta de los datos que Orion envía a Houston",
+      "access": "gratis, sitio web y app de NASA",
+      "pros": [
+        "Oficial; muestra velocidad, distancia y tiempo de misión",
+        "NASA ha publicado vectores de estado y una efeméride descargable en misiones Artemis",
+        "Se alimenta de la telemetría real de la nave"
+      ],
+      "cons": [
+        "Es una interfaz web: no se encontró una API oficial documentada",
+        "Depende del enlace de datos con Houston: si la nave no transmite, tampoco hay datos",
+        "Los vectores de estado se publican en momentos puntuales, no de forma continua"
+      ],
+      "use_in_project": "Vectores de estado para reinicializar el filtro tras un corte",
+      "status": "verificada",
+      "checked": "2026-11-14"
+    },
+    {
+      "id": "community_arow_relay",
+      "name": "Relé comunitario de AROW (artemis.cdnspace.ca)",
+      "url": "https://artemis.cdnspace.ca",
+      "missions": ["artemis"],
+      "measures": ["telemetría tipo AROW (posición y velocidad)", "estado de antenas DSN"],
+      "latency": "~1 s (flujo SSE); respaldo por consulta cada 5 s",
+      "access": "gratis, API abierta mantenida por la comunidad",
+      "pros": [
+        "Entrega los datos en un formato fácil de consumir por programa (flujo continuo)",
+        "Otros trackers de aficionados lo usan como fuente primaria con respaldo en Horizons"
+      ],
+      "cons": [
+        "No es oficial ni está afiliado a NASA: puede cambiar o desaparecer sin aviso",
+        "La existencia y descripción vienen de la página de otro tracker aficionado; no la probé directamente",
+        "No hay garantía de exactitud ni de continuidad"
+      ],
+      "use_in_project": "Candidata para el modo 'en vivo', siempre con Horizons como respaldo",
+      "status": "verificada",
+      "checked": "2026-11-14"
+    },
+    {
+      "id": "dsn_now",
+      "name": "NASA DSN Now (Red de Espacio Profundo)",
+      "url": "https://eyes.nasa.gov/dsn/dsn.html",
+      "missions": ["artemis", "deep_space"],
+      "measures": ["qué antenas se comunican con cada nave", "detalles de la señal", "tiempo de luz de ida y vuelta (round-trip light time)"],
+      "latency": "se actualiza cada ~5 a 60 s según la fuente (XML de NASA: ~60 s)",
+      "access": "gratis; datos en XML en eyes.nasa.gov/dsn/data/dsn.xml",
+      "pros": [
+        "El tiempo de luz de ida y vuelta equivale a una medición de distancia (rango) a la nave: sirve como medición adicional para el filtro",
+        "Confirma si hay enlace activo con la nave en este momento",
+        "Oficial y gratuito"
+      ],
+      "cons": [
+        "Solo cubre naves que usan la DSN (no LEO ni Starship)",
+        "Actualización lenta comparada con 1 Hz",
+        "El formato XML no tiene garantía de estabilidad"
+      ],
+      "use_in_project": "Medición de rango para espacio profundo (hoja de ruta)",
+      "status": "verificada",
+      "checked": "2026-11-14"
+    },
+    {
+      "id": "amateur_doppler",
+      "name": "Seguimiento Doppler por radioaficionados (AMSAT, SatNOGS)",
+      "url": "https://www.amsat.org",
+      "missions": ["artemis", "deep_space", "leo"],
+      "measures": ["velocidad radial (por efecto Doppler)", "telemetría de balizas"],
+      "latency": "tiempo real, con equipo propio o de la red",
+      "access": "gratis la información; recibir señales requiere antena y receptor SDR",
+      "pros": [
+        "Medición física independiente de NASA y de cualquier webcast",
+        "En Artemis I se siguieron balizas de 70 cm de un cubesat con herramientas como Horizons (según AMSAT)"
+      ],
+      "cons": [
+        "Solo funciona si la nave o un cubesat acompañante transmite en bandas de aficionados",
+        "Requiere equipo, ubicación con visibilidad y conocimiento técnico",
+        "Orion y Starship no emiten señales que un aficionado pueda usar como balizas"
+      ],
+      "use_in_project": "Medición de velocidad radial para cubesats y misiones lunares (hoja de ruta)",
+      "status": "verificada",
+      "checked": "2026-11-14"
+    },
+    {
+      "id": "naif_spice",
+      "name": "Kernels SPICE de NAIF (trayectorias reconstruidas)",
+      "url": "https://naif.jpl.nasa.gov/naif/",
+      "missions": ["artemis", "deep_space"],
+      "measures": ["trayectoria reconstruida con alta precisión", "orientación y marcos de referencia"],
+      "latency": "posterior a la misión (o por tramos)",
+      "access": "gratis; se leen con spiceypy",
+      "pros": [
+        "La trayectoria más precisa que existe tras la misión",
+        "Sirve para validar el filtro con datos reales después del vuelo"
+      ],
+      "cons": [
+        "No sirve en tiempo real",
+        "Hay que descargar y administrar kernels grandes"
+      ],
+      "use_in_project": "Validación post-vuelo del modo espacio profundo",
+      "status": "sin verificar",
+      "checked": null
+    },
+    {
+      "id": "celestrak",
+      "name": "CelesTrak (elementos orbitales TLE/OMM)",
+      "url": "https://celestrak.org",
+      "missions": ["leo"],
+      "measures": ["elementos orbitales para propagar con SGP4"],
+      "latency": "se actualizan cada cierto tiempo (horas a días)",
+      "access": "gratis, sin registro",
+      "pros": [
+        "Muy fácil de usar con skyfield, sgp4 o satellite.js",
+        "Cubre ISS, Starlink, cubesats y la mayoría de objetos en órbita terrestre"
+      ],
+      "cons": [
+        "Solo órbita terrestre: no sirve para vuelos suborbitales ni para el espacio profundo",
+        "La precisión es del orden de kilómetros y empeora con la antigüedad del TLE",
+        "No refleja maniobras recientes"
+      ],
+      "use_in_project": "Fuera del alcance actual; útil si se agrega el modo LEO",
+      "status": "sin verificar",
+      "checked": null
+    },
+    {
+      "id": "space_track",
+      "name": "Space-Track.org (catálogo oficial del Departamento de Defensa de EE.UU.)",
+      "url": "https://www.space-track.org",
+      "missions": ["leo"],
+      "measures": ["elementos orbitales oficiales (GP/TLE) de objetos en órbita"],
+      "latency": "se actualiza varias veces al día",
+      "access": "gratis, requiere registro y aceptar condiciones de uso",
+      "pros": [
+        "Fuente primaria del catálogo, con historial",
+        "Buena cobertura de objetos en órbita"
+      ],
+      "cons": [
+        "Requiere cuenta y respetar límites de consultas",
+        "Solo órbita terrestre"
+      ],
+      "use_in_project": "Fuera del alcance actual (modo LEO)",
+      "status": "sin verificar",
+      "checked": null
+    }
+  ]
+}
