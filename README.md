@@ -103,6 +103,25 @@ del modelo en parámetros de empuje y arrastre, y además incluye un **encendido
 no anunciado** durante un corte de señal (T+950 a T+980 s) para mostrar qué pasa
 cuando ocurre algo que el modelo no puede adivinar.
 
+## Visualización orbital
+
+Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbitales
+(`src/orbitas_rt/viz.py`):
+
+- **Huella en tierra (ground track)** para órbita baja/media (LEO/MEO): proyecta la
+  órbita sobre la superficie terrestre (lat/lon del punto sub-satélite).
+  ```bash
+  python examples/run_leo_ground_track.py
+  ```
+
+- **Diagrama interplanetario** para órbita alta, Tierra-Luna, Tierra-L2 o Tierra-Marte:
+  muestra las órbitas de los planetas y la trayectoria del objeto en coordenadas
+  heliocéntricas (eclíptica). Incluye un ejemplo con datos reales de ESCAPADE
+  (NASA) rumbo a Marte, obtenidos de JPL Horizons:
+  ```bash
+  python examples/run_escapade.py
+  ```
+
 ## Limitaciones (léelas antes de usarlo con datos reales)
 
 - **Altitud y rapidez no bastan para fijar la distancia recorrida.** Esta se
