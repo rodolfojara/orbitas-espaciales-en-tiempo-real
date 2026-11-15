@@ -22,5 +22,5 @@ print(f"Guardado: {path}  ({len(t)} puntos)")
 
 path2 = os.path.join(out, "leo_ground_track_ortho.png")
 ground_track_ortho(lat, lon, "Huella en tierra - LEO 400 km, inc 51.6° (3 órbitas)",
-                   path2)
+                   path2, subsolar_lon=30.0)
 print(f"Guardado: {path2}")

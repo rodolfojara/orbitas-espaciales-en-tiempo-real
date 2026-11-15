@@ -24,11 +24,13 @@ def _wrap_lon(lon):
     return (lon + 180.0) % 360.0 - 180.0
 
 
-def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True):
+def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True,
+                 daynight=True, subsolar_lon=0.0, subsolar_lat=0.0):
     """Dibuja una huella en tierra (lat/lon) sobre un mapa equirectangular simple.
 
     lat_deg, lon_deg: arrays en grados. La polilínea se corta en los saltos de
-    antimeridiano (|Δlon|>180) para evitar rectas espurias.
+    antimeridiano (|Δlon|>180) para evitar rectas espurias. Si daynight=True,
+    sombrea el hemisferio nocturno con un degradado gris.
     """
     lat = np.asarray(lat_deg, dtype=float)
     lon = np.asarray(lon_deg, dtype=float)
@@ -38,6 +40,30 @@ def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True
         ex = np.linspace(-180, 180, 361)
         ax.plot(ex, 90 * np.ones_like(ex), color="#2a6f3b", lw=0.6, alpha=0.4)
         ax.plot(ex, -90 * np.ones_like(ex), color="#2a6f3b", lw=0.6, alpha=0.4)
+
+    if daynight:
+        N = 400
+        lons = np.linspace(-180, 180, N)
+        lats = np.linspace(-90, 90, N)
+        LON, LAT = np.meshgrid(lons, lats)
+        slat = np.radians(subsolar_lat)
+        slon = np.radians(subsolar_lon)
+        cosz = (np.sin(slat) * np.sin(np.radians(LAT)) +
+                np.cos(slat) * np.cos(np.radians(LAT)) *
+                np.cos(np.radians(LON) - slon))
+        cosz = np.clip(cosz, -1.0, 1.0)
+        zenith = np.arccos(cosz)
+        night = zenith > (np.pi / 2)
+        darkness = np.clip((zenith - np.pi / 2) / (np.pi / 2), 0.0, 1.0)
+        gray = 0.90 - 0.50 * darkness
+        alpha = np.where(night, 0.18 + 0.42 * darkness, 0.0)
+        rgba = np.zeros((N, N, 4))
+        rgba[..., 0] = gray
+        rgba[..., 1] = gray
+        rgba[..., 2] = gray + 0.05
+        rgba[..., 3] = alpha
+        ax.imshow(rgba, extent=[-180, 180, -90, 90], origin="lower", zorder=1, aspect="auto")
+
     sc = ax.scatter(lon, lat, c=np.arange(len(lon)), cmap="viridis", s=6, zorder=3)
     # cortar en saltos de antimeridiano
     segs = []
@@ -70,11 +96,13 @@ def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True
     plt.close(fig)
 
 
-def ground_track_ortho(lat_deg, lon_deg, title, path, color="#1f77b4"):
+def ground_track_ortho(lat_deg, lon_deg, title, path, color="#1f77b4",
+                      subsolar_lon=0.0, subsolar_lat=0.0, daynight=True):
     """Huella en tierra en proyección ortográfica (globo), sin distorsión planar.
 
     Evita la distorsión de la proyección plana; muestra el hemisferio visible
-    centrado en (0,0).
+    centrado en (0,0). Si daynight=True, sombrea el hemisferio nocturno con un
+    degradado gris (no negro total).
     """
     lat = np.asarray(lat_deg, dtype=float)
     lon = np.asarray(lon_deg, dtype=float)
@@ -91,17 +119,51 @@ def ground_track_ortho(lat_deg, lon_deg, title, path, color="#1f77b4"):
     th = np.linspace(0, 2 * np.pi, 361)
     ax.plot(np.cos(th), np.sin(th), color="#2a6f3b", lw=1.2)
     ax.fill(np.cos(th), np.sin(th), color="#dbe9f4", alpha=0.4)
+
+    # Sombreado día/noche con degradado (solo en el disco visible)
+    if daynight:
+        N = 500
+        xs = np.linspace(-1.0, 1.0, N)
+        ys = np.linspace(-1.0, 1.0, N)
+        X, Y = np.meshgrid(xs, ys)
+        R2 = X * X + Y * Y
+        mask = R2 <= 1.0
+        Z = np.sqrt(np.clip(1.0 - R2, 0.0, 1.0))
+        # vector del punto en la esfera (unitario)
+        # sun direction
+        slat = np.radians(subsolar_lat)
+        slon = np.radians(subsolar_lon)
+        S = np.array([np.cos(slat) * np.cos(slon),
+                      np.cos(slat) * np.sin(slon),
+                      np.sin(slat)])
+        cosz = X * S[0] + Y * S[1] + Z * S[2]
+        cosz = np.clip(cosz, -1.0, 1.0)
+        zenith = np.arccos(cosz)  # 0 = subsolar, pi = antisolar
+        night = zenith > (np.pi / 2)
+        darkness = np.clip((zenith - np.pi / 2) / (np.pi / 2), 0.0, 1.0)
+        # degradado gris: terminador claro, antisolar más oscuro (no negro total)
+        gray = 0.88 - 0.55 * darkness
+        alpha = np.where(night, 0.25 + 0.45 * darkness, 0.0)
+        rgba = np.zeros((N, N, 4))
+        rgba[..., 0] = gray
+        rgba[..., 1] = gray
+        rgba[..., 2] = gray + 0.05
+        rgba[..., 3] = alpha
+        # enmascarar fuera del disco
+        rgba[~mask, 3] = 0.0
+        ax.imshow(rgba, extent=[-1, 1, -1, 1], origin="lower", zorder=2)
+
     xs = x[visible]
     ys = y[visible]
     ax.scatter(xs, ys, c=np.arange(len(xs)), cmap="viridis", s=6, zorder=3)
     for i in range(1, len(lat)):
         if not (visible[i] and visible[i - 1]):
             continue
-        ax.plot([x[i - 1], x[i]], [y[i - 1], y[i]], color=color, lw=1.0, alpha=0.6, zorder=2)
+        ax.plot([x[i - 1], x[i]], [y[i - 1], y[i]], color=color, lw=1.0, alpha=0.6, zorder=4)
     vis_idx = np.where(visible)[0]
     if len(vis_idx) > 0:
-        ax.scatter([x[vis_idx[0]]], [y[vis_idx[0]]], color="green", s=60, zorder=4, label="inicio")
-        ax.scatter([x[vis_idx[-1]]], [y[vis_idx[-1]]], color="red", s=60, zorder=4, label="fin")
+        ax.scatter([x[vis_idx[0]]], [y[vis_idx[0]]], color="green", s=60, zorder=5, label="inicio")
+        ax.scatter([x[vis_idx[-1]]], [y[vis_idx[-1]]], color="red", s=60, zorder=5, label="fin")
     ax.set_aspect("equal")
     ax.set_xlim(-1.15, 1.15)
     ax.set_ylim(-1.15, 1.15)
