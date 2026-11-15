@@ -1,12 +1,13 @@
 """Trayectorias ilustrativas de Starship sobre el mapa mundial.
 
-IMPORTANTE: no son datos reales. Starship no ha realizado (a la fecha) un vuelo
-orbital completo de 10 órbitas. Estas trayectorias son ilustrativas, generadas
-con el modelo orbital del proyecto, para mostrar cómo se verían en el mapa.
+NOTA: no son datos reales. Basadas en la cronología pública de Starship Flight 15
+(13 nov 2026): Ship 42 alcanzó órbita LEO y fue capturado en Starbase tras ~22.5 h
+(~15 órbitas). El booster B22 abortó la aproximación (anomalía GNC) y se estrelló
+en el Golfo de México; NO fue capturado.
 
 Genera:
-  - examples/output/starship_orbital.png / .html  (trayectoria orbital, ~10 órbitas LEO)
-  - examples/output/starship_booster.png         (arco suborbital del booster, ~8 min)
+  - examples/output/starship_orbital.png / .html  (trayectoria orbital, ~15 órbitas LEO)
+  - examples/output/starship_booster.png         (arco suborbital del booster, ~8 min, splashdown Golfo)
 """
 import os
 import sys
@@ -31,15 +32,15 @@ subsolar_lat = solar_declination()
 # --- 1) Trayectoria orbital ilustrativa: ~10 órbitas LEO a ~200 km ---
 lat_o, lon_o, t_o = leo_ground_track(altitude_km=200.0, inclination_deg=28.5,
                                      raan_deg=0.0,
-                                     n_orbits=10, dt_s=60.0)
+                                     n_orbits=15, dt_s=60.0)
 
 path = os.path.join(out, "starship_orbital.png")
-ground_track(lat_o, lon_o, "Starship orbital (ilustrativo, ~10 órbitas LEO, ~200 km)",
+ground_track(lat_o, lon_o, "Starship orbital (ilustrativo, ~15 órbitas LEO, ~200 km, ~22.5 h)",
              path, subsolar_lon=subsolar_lon, subsolar_lat=subsolar_lat)
 print(f"Guardado: {path}")
 
 path2 = os.path.join(out, "starship_orbital_ortho.png")
-ground_track_ortho(lat_o, lon_o, "Starship orbital (ilustrativo, ~10 órbitas LEO)",
+ground_track_ortho(lat_o, lon_o, "Starship orbital (ilustrativo, ~15 órbitas LEO)",
                    path2, subsolar_lon=subsolar_lon, subsolar_lat=subsolar_lat)
 print(f"Guardado: {path2}")
 
@@ -101,7 +102,7 @@ html = """<!DOCTYPE html>
 <div id="map"></div>
 <div class="info">
   <b>Starship orbital (ilustrativo)</b><br/>
-  ~10 órbitas LEO, ~200 km<br/>
+  ~15 órbitas LEO, ~200 km, ~22.5 h<br/>
   Lanzamiento desde Starbase (ilustrativo)<br/>
   Puntos: __N__<br/>
   <small>No son datos reales.</small>
@@ -159,9 +160,11 @@ down = 80 * np.sin(np.pi * t_b / 480)  # 0 -> 80 km -> 0
 from orbitas_rt.geo import destination, STARBASE, DEFAULT_AZIMUTH_DEG
 lat_b, lon_b = destination(STARBASE[0], STARBASE[1], DEFAULT_AZIMUTH_DEG, down * 1000.0)
 path_b = os.path.join(out, "starship_booster.png")
-ground_track(lat_b, lon_b, "Super Heavy booster (ilustrativo, ~8 min, aterrizaje cerca del pad)",
+ground_track(lat_b, lon_b, "Super Heavy booster (ilustrativo, ~8 min, splashdown Golfo de Mexico)",
              path_b, subsolar_lon=subsolar_lon, subsolar_lat=subsolar_lat)
 print(f"Guardado: {path_b}")
 
 print()
 print("NOTA: trayectorias ilustrativas, no datos reales de Starship.")
+print("Flight 15: Ship 42 capturado en Starbase. B22 aborto (anomalia GNC) y se")
+print("estrello en el Golfo de Mexico. Solo Ship 42 fue recuperado.")
