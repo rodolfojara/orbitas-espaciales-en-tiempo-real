@@ -116,6 +116,11 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   python examples/run_leo_ground_track.py
   ```
 
+- **Trayectoria suborbital (Starship/S42)** sobre el mapa mundial (simulación, no datos reales):
+  ```bash
+  python examples/run_starship_track.py
+  ```
+
 - **Diagrama interplanetario** para órbita alta, Tierra-Luna, Tierra-L2 o Tierra-Marte:
   muestra las órbitas de los planetas y la trayectoria del objeto en coordenadas
   heliocéntricas (eclíptica). Incluye un ejemplo con datos reales de ESCAPADE
