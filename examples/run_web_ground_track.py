@@ -49,16 +49,31 @@ html = """<!DOCTYPE html>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
   const points = __POINTS__;
+  // Cortar la polilínea en los saltos de antimeridiano (|Δlon|>180)
+  const segments = [];
+  let cur = [points[0]];
+  for (let i = 1; i < points.length; i++) {
+    if (Math.abs(points[i][1] - points[i-1][1]) > 180) {
+      segments.push(cur); cur = [points[i]];
+    } else {
+      cur.push(points[i]);
+    }
+  }
+  segments.push(cur);
   const map = L.map('map').setView([0, 0], 2);
   // Proveedor de tiles que funciona abriendo el HTML localmente (file://).
   // OpenStreetMap bloquea las peticiones sin Referer; Esri no.
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 8, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
   }).addTo(map);
-  const poly = L.polyline(points, {color: '#d62728', weight: 2, opacity: 0.8}).addTo(map);
+  const group = L.featureGroup().addTo(map);
+  segments.forEach(seg => {
+    if (seg.length < 2) return;
+    L.polyline(seg, {color: '#d62728', weight: 2, opacity: 0.8}).addTo(group);
+  });
   L.circleMarker(points[0], {radius: 6, color: 'green'}).addTo(map).bindPopup('Inicio');
   L.circleMarker(points[points.length-1], {radius: 6, color: 'red'}).addTo(map).bindPopup('Fin');
-  map.fitBounds(poly.getBounds());
+  map.fitBounds(group.getBounds());
 </script>
 </body>
 </html>

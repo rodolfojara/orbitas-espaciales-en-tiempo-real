@@ -15,7 +15,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
-
 RE_KM = 6371.0
 MU_KM3_S2 = 3.986004418e5  # km^3/s^2 (Tierra)
 OMEGA_EARTH_RAD_S = 7.2921159e-5  # rotación terrestre
@@ -28,25 +27,33 @@ def _wrap_lon(lon):
 def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True):
     """Dibuja una huella en tierra (lat/lon) sobre un mapa equirectangular simple.
 
-    lat_deg, lon_deg: arrays en grados.
+    lat_deg, lon_deg: arrays en grados. La polilínea se corta en los saltos de
+    antimeridiano (|Δlon|>180) para evitar rectas espurias.
     """
     lat = np.asarray(lat_deg, dtype=float)
     lon = np.asarray(lon_deg, dtype=float)
     fig, ax = plt.subplots(figsize=(12, 5.5))
     if show_earth:
-        # Fondo "océano" + contorno terrestre simplificado (elipse)
         ax.set_facecolor("#dbe9f4")
-        theta = np.linspace(0, 2 * np.pi, 361)
-        pass
-        # Dibujo de la esfera terrestre como óvalo (aproximación)
         ex = np.linspace(-180, 180, 361)
-        # contorno superior/inferior (círculo en proyección equirectangular es elipse)
         ax.plot(ex, 90 * np.ones_like(ex), color="#2a6f3b", lw=0.6, alpha=0.4)
         ax.plot(ex, -90 * np.ones_like(ex), color="#2a6f3b", lw=0.6, alpha=0.4)
-    # Línea de la huella, coloreada por tiempo (índice)
     sc = ax.scatter(lon, lat, c=np.arange(len(lon)), cmap="viridis", s=6, zorder=3)
-    ax.plot(lon, lat, color=color, lw=1.0, alpha=0.6, zorder=2)
-    # marcar inicio y fin
+    # cortar en saltos de antimeridiano
+    segs = []
+    cur = [(lon[0], lat[0])]
+    for i in range(1, len(lon)):
+        if abs(lon[i] - lon[i - 1]) > 180.0:
+            segs.append(cur)
+            cur = [(lon[i], lat[i])]
+        else:
+            cur.append((lon[i], lat[i]))
+    segs.append(cur)
+    for seg in segs:
+        if len(seg) < 2:
+            continue
+        xs, ys = zip(*seg)
+        ax.plot(xs, ys, color=color, lw=1.0, alpha=0.6, zorder=2)
     ax.scatter([lon[0]], [lat[0]], color="green", s=60, zorder=4, label="inicio")
     ax.scatter([lon[-1]], [lat[-1]], color="red", s=60, zorder=4, label="fin")
     ax.set_xlim(-180, 180)
@@ -63,6 +70,51 @@ def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True
     plt.close(fig)
 
 
+def ground_track_ortho(lat_deg, lon_deg, title, path, color="#1f77b4"):
+    """Huella en tierra en proyección ortográfica (globo), sin distorsión planar.
+
+    Evita la distorsión de la proyección plana; muestra el hemisferio visible
+    centrado en (0,0).
+    """
+    lat = np.asarray(lat_deg, dtype=float)
+    lon = np.asarray(lon_deg, dtype=float)
+    lat0, lon0 = 0.0, 0.0
+    c = (np.sin(np.radians(lat0)) * np.sin(np.radians(lat)) +
+         np.cos(np.radians(lat0)) * np.cos(np.radians(lat)) *
+         np.cos(np.radians(lon - lon0)))
+    visible = c > 0
+    x = np.cos(np.radians(lat)) * np.sin(np.radians(lon - lon0))
+    y = (np.sin(np.radians(lat)) * np.cos(np.radians(lat0)) -
+         np.cos(np.radians(lat)) * np.sin(np.radians(lat0)) *
+         np.cos(np.radians(lon - lon0)))
+    fig, ax = plt.subplots(figsize=(7, 7))
+    th = np.linspace(0, 2 * np.pi, 361)
+    ax.plot(np.cos(th), np.sin(th), color="#2a6f3b", lw=1.2)
+    ax.fill(np.cos(th), np.sin(th), color="#dbe9f4", alpha=0.4)
+    xs = x[visible]
+    ys = y[visible]
+    ax.scatter(xs, ys, c=np.arange(len(xs)), cmap="viridis", s=6, zorder=3)
+    for i in range(1, len(lat)):
+        if not (visible[i] and visible[i - 1]):
+            continue
+        ax.plot([x[i - 1], x[i]], [y[i - 1], y[i]], color=color, lw=1.0, alpha=0.6, zorder=2)
+    vis_idx = np.where(visible)[0]
+    if len(vis_idx) > 0:
+        ax.scatter([x[vis_idx[0]]], [y[vis_idx[0]]], color="green", s=60, zorder=4, label="inicio")
+        ax.scatter([x[vis_idx[-1]]], [y[vis_idx[-1]]], color="red", s=60, zorder=4, label="fin")
+    ax.set_aspect("equal")
+    ax.set_xlim(-1.15, 1.15)
+    ax.set_ylim(-1.15, 1.15)
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_title(title + " (proyección ortográfica)")
+    ax.grid(alpha=0.2, linestyle=":")
+    ax.legend(fontsize=8, loc="upper right")
+    fig.tight_layout()
+    fig.savefig(path, dpi=140)
+    plt.close(fig)
+
+
 def leo_ground_track(altitude_km=400.0, inclination_deg=51.6, n_orbits=3,
                     dt_s=30.0, raan_deg=0.0, arglat0_deg=0.0):
     """Genera (lat, lon) del punto sub-satélite para una órbita circular LEO.
@@ -70,18 +122,16 @@ def leo_ground_track(altitude_km=400.0, inclination_deg=51.6, n_orbits=3,
     Devuelve (lat_deg array, lon_deg array, t_s array).
     """
     a = RE_KM + altitude_km
-    # período orbital (s)
     T = 2 * np.pi * np.sqrt(a ** 3 / MU_KM3_S2)
-    n = 2 * np.pi / T  # rad/s movimiento medio
+    n = 2 * np.pi / T
     i = np.radians(inclination_deg)
     Omega = np.radians(raan_deg)
     u0 = np.radians(arglat0_deg)
 
     t_end = n_orbits * T
     t = np.arange(0.0, t_end, dt_s)
-    u = u0 + n * t  # argumento de latitud
+    u = u0 + n * t
 
-    # posición ECI (km)
     x = a * (np.cos(Omega) * np.cos(u) - np.sin(Omega) * np.sin(u) * np.cos(i))
     y = a * (np.sin(Omega) * np.cos(u) + np.cos(Omega) * np.sin(u) * np.cos(i))
     z = a * (np.sin(i) * np.sin(u))
@@ -89,7 +139,6 @@ def leo_ground_track(altitude_km=400.0, inclination_deg=51.6, n_orbits=3,
     r = np.sqrt(x * x + y * y + z * z)
     lat = np.degrees(np.arcsin(np.clip(z / r, -1, 1)))
     lon_eci = np.degrees(np.arctan2(y, x))
-    # rotación terrestre: lon geográfica = lon_eci - omega_E * t (deg)
     lon_geo = _wrap_lon(lon_eci - np.degrees(OMEGA_EARTH_RAD_S * t))
     return lat, lon_geo, t
 
@@ -98,22 +147,18 @@ def interplanetary(bodies, trajectory=None, title="Diagrama interplanetario (ecl
                    path="interplanetary.png", xlim=None, ylim=None):
     """Dibuja órbitas planetarias y una trayectoria en coordenadas heliocéntricas (AU).
 
-    bodies: lista de dict con keys: name, r (N,2) o (N,3) array en AU (x,y), color, marker.
-           Si se pasa una órbita circular, r puede ser un escalar (radio AU) -> se dibuja círculo.
+    bodies: lista de dict con keys: name, a (radio escalar AU) o r (N,2/3).
     trajectory: dict opcional con keys: name, r (N,2/3), color.
     """
     fig, ax = plt.subplots(figsize=(9, 9))
     ax.set_facecolor("#0b1020")
-    # Sol
     ax.scatter([0], [0], color="#ffd24d", s=200, zorder=5, label="Sol")
-    # Órbitas planetarias (círculos) si se dan como radio escalar
     for b in bodies:
         if np.isscalar(b.get("a")):
             a = b["a"]
             th = np.linspace(0, 2 * np.pi, 361)
             ax.plot(a * np.cos(th), a * np.sin(th), color=b.get("color", "gray"),
                     lw=1.0, alpha=0.6, label=b["name"])
-            # posición actual si se da r
             if "r" in b and not np.isscalar(b["r"]):
                 rr = np.asarray(b["r"])
                 if rr.ndim == 2:
@@ -160,7 +205,6 @@ def plot_orbit_3d(r_eci, title, path, show_earth=True):
     fig = plt.figure(figsize=(9, 8))
     ax = fig.add_subplot(111, projection="3d")
     if show_earth:
-        # Esfera terrestre
         u = np.linspace(0, 2 * np.pi, 40)
         v = np.linspace(0, np.pi, 20)
         xs = RE_KM * np.outer(np.cos(u), np.sin(v))
@@ -170,7 +214,6 @@ def plot_orbit_3d(r_eci, title, path, show_earth=True):
     ax.plot(r[:, 0], r[:, 1], r[:, 2], color="#ff5555", lw=1.5, label="órbita")
     ax.scatter([r[0, 0]], [r[0, 1]], [r[0, 2]], color="green", s=40, label="inicio")
     ax.scatter([r[-1, 0]], [r[-1, 1]], [r[-1, 2]], color="red", s=40, label="fin")
-    # ejes
     maxr = max(np.max(np.abs(r)), RE_KM) * 1.1
     ax.set_xlim(-maxr, maxr)
     ax.set_ylim(-maxr, maxr)

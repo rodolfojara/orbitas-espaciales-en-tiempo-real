@@ -109,7 +109,9 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
 (`src/orbitas_rt/viz.py`):
 
 - **Huella en tierra (ground track)** para órbita baja/media (LEO/MEO): proyecta la
-  órbita sobre la superficie terrestre (lat/lon del punto sub-satélite).
+  órbita sobre la superficie terrestre (lat/lon del punto sub-satélite). Incluye
+  versión en proyección ortográfica (globo) para evitar la distorsión de la
+  proyección plana.
   ```bash
   python examples/run_leo_ground_track.py
   ```

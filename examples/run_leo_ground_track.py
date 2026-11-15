@@ -7,7 +7,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from orbitas_rt.viz import ground_track, leo_ground_track
+from orbitas_rt.viz import ground_track, ground_track_ortho, leo_ground_track
 
 out = os.path.join(os.path.dirname(__file__), "output")
 os.makedirs(out, exist_ok=True)
@@ -19,3 +19,8 @@ path = os.path.join(out, "leo_ground_track.png")
 ground_track(lat, lon, "Huella en tierra - LEO 400 km, inc 51.6° (3 órbitas)",
              path)
 print(f"Guardado: {path}  ({len(t)} puntos)")
+
+path2 = os.path.join(out, "leo_ground_track_ortho.png")
+ground_track_ortho(lat, lon, "Huella en tierra - LEO 400 km, inc 51.6° (3 órbitas)",
+                   path2)
+print(f"Guardado: {path2}")
