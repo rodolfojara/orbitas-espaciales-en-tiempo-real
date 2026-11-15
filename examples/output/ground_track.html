@@ -37,11 +37,15 @@
     }
   }
   segments.push(cur);
-  const map = L.map('map').setView([0, 0], 2);
+  const map = L.map('map', {
+    maxBounds: [[-90, -180], [90, 180]],
+    maxBoundsViscosity: 1.0,
+    worldCopyJump: false
+  }).setView([0, 0], 2);
   // Proveedor de tiles que funciona abriendo el HTML localmente (file://).
   // OpenStreetMap bloquea las peticiones sin Referer; Esri no.
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 8, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
+    maxZoom: 8, noWrap: true, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
   }).addTo(map);
   // Sombreado día/noche (degradado)
   L.imageOverlay('daynight.png', [[-90, -180], [90, 180]], {opacity: 0.85, interactive: false}).addTo(map);

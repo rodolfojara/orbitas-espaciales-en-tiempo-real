@@ -91,10 +91,21 @@ def solar_declination(day_of_year=None):
     return float(-23.44 * np.cos(2 * np.pi * (day_of_year + 10) / 365.25))
 
 
+def solar_subsolar_lon(utc_hour=None):
+    """Longitud subsolar aproximada (grados) para una hora UTC.
+
+    A las 12 UTC el sol está sobre el meridiano 0°.
+    """
+    if utc_hour is None:
+        now = datetime.utcnow()
+        utc_hour = now.hour + now.minute / 60.0 + now.second / 3600.0
+    return float(180.0 - utc_hour * 15.0)
+
+
 def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True,
                  daynight=True, subsolar_lon=None, subsolar_lat=None):
     if subsolar_lon is None:
-        subsolar_lon = 0.0
+        subsolar_lon = solar_subsolar_lon()
     if subsolar_lat is None:
         subsolar_lat = solar_declination()
     """Dibuja una huella en tierra (lat/lon) sobre un mapa equirectangular simple.
@@ -171,7 +182,7 @@ def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True
 def ground_track_ortho(lat_deg, lon_deg, title, path, color="#1f77b4",
                       subsolar_lon=None, subsolar_lat=None, daynight=True):
     if subsolar_lon is None:
-        subsolar_lon = 0.0
+        subsolar_lon = solar_subsolar_lon()
     if subsolar_lat is None:
         subsolar_lat = solar_declination()
     """Huella en tierra en proyección ortográfica (globo), sin distorsión planar.

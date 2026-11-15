@@ -27,11 +27,11 @@ lat, lon, alt, t = orbit_ground_track(a_km=6871.0, e=0.0, i_deg=51.6,
 points = [[float(la), float(lo)] for la, lo in zip(lat, lon)]
 
 # Generar imagen día/noche (equirectangular) para overlay en el mapa web
-subsolar_lon = 0.0
-# declinación solar aproximada para la fecha actual (invierno en hemisferio norte)
-import datetime as _dt
-_doy = _dt.date.today().timetuple().tm_yday
-subsolar_lat = -23.44 * __import__('numpy').cos(2 * __import__('numpy').pi * (_doy + 10) / 365.25)
+import sys as _sys
+_sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+from orbitas_rt.viz import solar_subsolar_lon, solar_declination
+subsolar_lon = solar_subsolar_lon()
+subsolar_lat = solar_declination()
 N = 360
 lons = np.linspace(-180, 180, N)
 slat = np.radians(subsolar_lat)
@@ -99,11 +99,15 @@ html = """<!DOCTYPE html>
     }
   }
   segments.push(cur);
-  const map = L.map('map').setView([0, 0], 2);
+  const map = L.map('map', {
+    maxBounds: [[-90, -180], [90, 180]],
+    maxBoundsViscosity: 1.0,
+    worldCopyJump: false
+  }).setView([0, 0], 2);
   // Proveedor de tiles que funciona abriendo el HTML localmente (file://).
   // OpenStreetMap bloquea las peticiones sin Referer; Esri no.
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 8, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
+    maxZoom: 8, noWrap: true, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
   }).addTo(map);
   // Sombreado día/noche (degradado)
   L.imageOverlay('daynight.png', [[-90, -180], [90, 180]], {opacity: 0.85, interactive: false}).addTo(map);
