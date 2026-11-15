@@ -122,6 +122,11 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   ```
   Genera una trayectoria orbital (~10 órbitas LEO) y un arco suborbital del booster (~8 min).
 
+- **Órbita REAL desde CelesTrak** (Starlink desplegado por Starship Flight 15, SGP4):
+  ```bash
+  python examples/run_real_starlink.py
+  ```
+
 - **Diagrama interplanetario** para órbita alta, Tierra-Luna, Tierra-L2 o Tierra-Marte:
   muestra las órbitas de los planetas y la trayectoria del objeto en coordenadas
   heliocéntricas (eclíptica). Incluye un ejemplo con datos reales de ESCAPADE
