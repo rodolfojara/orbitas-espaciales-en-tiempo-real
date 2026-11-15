@@ -132,6 +132,11 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   python examples/run_real_starlink.py
   ```
 
+- **Satélites chilenos (reales, CelesTrak + SGP4)**: SUCHAI-4, FASAT B, SSOT:
+  ```bash
+  python examples/run_chile_satellites.py
+  ```
+
 - **Diagrama interplanetario** para órbita alta, Tierra-Luna, Tierra-L2 o Tierra-Marte:
   muestra las órbitas de los planetas y la trayectoria del objeto en coordenadas
   heliocéntricas (eclíptica). Incluye un ejemplo con datos reales de ESCAPADE
