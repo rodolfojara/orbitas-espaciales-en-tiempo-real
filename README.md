@@ -120,7 +120,12 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   ```bash
   python examples/run_starship_track.py
   ```
-  Genera una trayectoria orbital (~10 órbitas LEO) y un arco suborbital del booster (~8 min).
+  Genera una trayectoria orbital (~15 órbitas LEO) y un arco suborbital del booster (~8 min).
+
+- **Reentrada y aproximación (Starship Flight 15)**: órbita + arco de reentrada desde el Golfo:
+  ```bash
+  python examples/run_starship_reentry.py
+  ```
 
 - **Órbita REAL desde CelesTrak** (Starlink desplegado por Starship Flight 15, SGP4):
   ```bash
