@@ -55,8 +55,8 @@ cosz2 = np.clip(cosz2, -1.0, 1.0)
 zenith2 = np.arccos(cosz2)
 night2 = zenith2 > (np.pi / 2)
 darkness2 = np.clip((zenith2 - np.pi / 2) / (np.pi / 2), 0.0, 1.0)
-gray2 = 0.85 - 0.45 * darkness2
-alpha2 = np.where(night2, 0.12 + 0.38 * darkness2, 0.0)
+gray2 = 0.75 - 0.55 * darkness2
+alpha2 = np.where(night2, 0.35 + 0.50 * darkness2, 0.0)
 rgba2 = np.zeros((N // 2, N, 4))
 rgba2[..., 0] = gray2
 rgba2[..., 1] = gray2
@@ -115,7 +115,7 @@ html = """<!DOCTYPE html>
     maxZoom: 8, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
   }).addTo(map);
   // Sombreado día/noche (degradado)
-  L.imageOverlay('daynight.png', [[-90, -180], [90, 180]], {opacity: 0.55, interactive: false}).addTo(map);
+  L.imageOverlay('daynight.png', [[-90, -180], [90, 180]], {opacity: 0.85, interactive: false}).addTo(map);
   const group = L.featureGroup().addTo(map);
   segments.forEach(seg => {
     if (seg.length < 2) return;
