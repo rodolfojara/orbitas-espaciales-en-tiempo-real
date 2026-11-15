@@ -42,14 +42,18 @@ html = """<!DOCTYPE html>
   <b>Huella en tierra - LEO</b><br/>
   Altitud ~500 km, inc. 51.6°<br/>
   3 órbitas, rotación terrestre incluida<br/>
-  Puntos: __N__
+  Puntos: __N__<br/>
+  <small>Si el mapa base se bloquea, sirve la carpeta con<br/>
+  <code>python -m http.server 8000</code></small>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
   const points = __POINTS__;
   const map = L.map('map').setView([0, 0], 2);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 8, attribution: '&copy; OpenStreetMap contributors'
+  // Proveedor de tiles que funciona abriendo el HTML localmente (file://).
+  // OpenStreetMap bloquea las peticiones sin Referer; Esri no.
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 8, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
   }).addTo(map);
   const poly = L.polyline(points, {color: '#d62728', weight: 2, opacity: 0.8}).addTo(map);
   L.circleMarker(points[0], {radius: 6, color: 'green'}).addTo(map).bindPopup('Inicio');
@@ -67,3 +71,6 @@ with open(path, "w", encoding="utf-8") as f:
     f.write(html)
 print(f"Guardado: {path}")
 print("Ábrelo en un navegador (doble clic) para ver el mapa interactivo.")
+print("Si el mapa base aparece bloqueado, sirve la carpeta con un servidor local:")
+print("  cd examples/output && python -m http.server 8000")
+print("  y abre http://localhost:8000/ground_track.html")
