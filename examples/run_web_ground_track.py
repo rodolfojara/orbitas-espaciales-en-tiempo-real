@@ -27,24 +27,15 @@ lat, lon, alt, t = orbit_ground_track(a_km=6871.0, e=0.0, i_deg=51.6,
 points = [[float(la), float(lo)] for la, lo in zip(lat, lon)]
 
 # Generar imagen día/noche (equirectangular) para overlay en el mapa web
-subsolar_lon = 30.0
-subsolar_lat = 0.0
+subsolar_lon = 0.0
+# declinación solar aproximada para la fecha actual (invierno en hemisferio norte)
+import datetime as _dt
+_doy = _dt.date.today().timetuple().tm_yday
+subsolar_lat = -23.44 * __import__('numpy').cos(2 * __import__('numpy').pi * (_doy + 10) / 365.25)
 N = 360
 lons = np.linspace(-180, 180, N)
-lats = np.linspace(-90, 90, N)
-LON, LAT = np.meshgrid(lons, lats)
 slat = np.radians(subsolar_lat)
 slon = np.radians(subsolar_lon)
-cosz = (np.sin(slat) * np.sin(np.radians(LAT)) +
-        np.cos(slat) * np.cos(np.radians(LAT)) *
-        np.cos(np.radians(LON) - slon))
-cosz = np.clip(cosz, -1.0, 1.0)
-zenith = np.arccos(cosz)
-night = zenith > (np.pi / 2)
-darkness = np.clip((zenith - np.pi / 2) / (np.pi / 2), 0.0, 1.0)
-gray = 0.85 - 0.45 * darkness
-alpha = np.where(night, 0.12 + 0.38 * darkness, 0.0)
-rgba = np.zeros((N // 2, N, 4))
 # resize lats to N//2
 lats2 = np.linspace(-90, 90, N // 2)
 LON2, LAT2 = np.meshgrid(lons, lats2)
@@ -55,12 +46,12 @@ cosz2 = np.clip(cosz2, -1.0, 1.0)
 zenith2 = np.arccos(cosz2)
 night2 = zenith2 > (np.pi / 2)
 darkness2 = np.clip((zenith2 - np.pi / 2) / (np.pi / 2), 0.0, 1.0)
-gray2 = 0.75 - 0.55 * darkness2
-alpha2 = np.where(night2, 0.35 + 0.50 * darkness2, 0.0)
+gray2 = 0.72 - 0.48 * darkness2
+alpha2 = np.where(night2, 0.30 + 0.45 * darkness2, 0.0)
 rgba2 = np.zeros((N // 2, N, 4))
 rgba2[..., 0] = gray2
 rgba2[..., 1] = gray2
-rgba2[..., 2] = gray2 + 0.05
+rgba2[..., 2] = gray2 + 0.02
 rgba2[..., 3] = alpha2
 fig, ax = plt.subplots(figsize=(8, 4))
 ax.imshow(rgba2, extent=[-180, 180, -90, 90], origin="lower", aspect="auto")

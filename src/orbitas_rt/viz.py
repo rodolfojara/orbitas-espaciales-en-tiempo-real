@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime
 
 import numpy as np
 import matplotlib
@@ -80,8 +81,22 @@ def _wrap_lon(lon):
     return (lon + 180.0) % 360.0 - 180.0
 
 
+def solar_declination(day_of_year=None):
+    """Declinación solar aproximada (grados) para un día del año.
+
+    Negativa en el invierno del hemisferio norte (nov-feb).
+    """
+    if day_of_year is None:
+        day_of_year = datetime.now().timetuple().tm_yday
+    return float(-23.44 * np.cos(2 * np.pi * (day_of_year + 10) / 365.25))
+
+
 def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True,
-                 daynight=True, subsolar_lon=0.0, subsolar_lat=0.0):
+                 daynight=True, subsolar_lon=None, subsolar_lat=None):
+    if subsolar_lon is None:
+        subsolar_lon = 0.0
+    if subsolar_lat is None:
+        subsolar_lat = solar_declination()
     """Dibuja una huella en tierra (lat/lon) sobre un mapa equirectangular simple.
 
     lat_deg, lon_deg: arrays en grados. La polilínea se corta en los saltos de
@@ -112,12 +127,12 @@ def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True
         zenith = np.arccos(cosz)
         night = zenith > (np.pi / 2)
         darkness = np.clip((zenith - np.pi / 2) / (np.pi / 2), 0.0, 1.0)
-        gray = 0.75 - 0.55 * darkness
-        alpha = np.where(night, 0.35 + 0.50 * darkness, 0.0)
+        gray = 0.72 - 0.48 * darkness
+        alpha = np.where(night, 0.30 + 0.45 * darkness, 0.0)
         rgba = np.zeros((N, N, 4))
         rgba[..., 0] = gray
         rgba[..., 1] = gray
-        rgba[..., 2] = gray + 0.05
+        rgba[..., 2] = gray + 0.02
         rgba[..., 3] = alpha
         ax.imshow(rgba, extent=[-180, 180, -90, 90], origin="lower", zorder=1, aspect="auto")
 
@@ -154,7 +169,11 @@ def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True
 
 
 def ground_track_ortho(lat_deg, lon_deg, title, path, color="#1f77b4",
-                      subsolar_lon=0.0, subsolar_lat=0.0, daynight=True):
+                      subsolar_lon=None, subsolar_lat=None, daynight=True):
+    if subsolar_lon is None:
+        subsolar_lon = 0.0
+    if subsolar_lat is None:
+        subsolar_lat = solar_declination()
     """Huella en tierra en proyección ortográfica (globo), sin distorsión planar.
 
     Evita la distorsión de la proyección plana; muestra el hemisferio visible
@@ -197,12 +216,12 @@ def ground_track_ortho(lat_deg, lon_deg, title, path, color="#1f77b4",
         zenith = np.arccos(cosz)
         night = zenith > (np.pi / 2)
         darkness = np.clip((zenith - np.pi / 2) / (np.pi / 2), 0.0, 1.0)
-        gray = 0.75 - 0.55 * darkness
-        alpha = np.where(night, 0.35 + 0.50 * darkness, 0.0)
+        gray = 0.72 - 0.48 * darkness
+        alpha = np.where(night, 0.30 + 0.45 * darkness, 0.0)
         rgba = np.zeros((N, N, 4))
         rgba[..., 0] = gray
         rgba[..., 1] = gray
-        rgba[..., 2] = gray + 0.05
+        rgba[..., 2] = gray + 0.02
         rgba[..., 3] = alpha
         rgba[~mask, 3] = 0.0
         ax.imshow(rgba, extent=[-1, 1, -1, 1], origin="lower", zorder=2)
