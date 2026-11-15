@@ -43,6 +43,8 @@
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 8, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
   }).addTo(map);
+  // Sombreado día/noche (degradado)
+  L.imageOverlay('daynight.png', [[-90, -180], [90, 180]], {opacity: 0.55, interactive: false}).addTo(map);
   const group = L.featureGroup().addTo(map);
   segments.forEach(seg => {
     if (seg.length < 2) return;

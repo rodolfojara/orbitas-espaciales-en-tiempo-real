@@ -9,11 +9,67 @@ Dos familias:
 """
 from __future__ import annotations
 
+import json
+import os
+
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+
+_WORLD_GEOJSON = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "data", "world_countries.geojson")
+
+
+def _load_world():
+    if not os.path.exists(_WORLD_GEOJSON):
+        return None
+    with open(_WORLD_GEOJSON, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def draw_world_map(ax, projection="plate", color="#4a7c59", lw=0.4, alpha=0.6):
+    """Dibuja las costas del mundo a partir del GeoJSON incluido."""
+    data = _load_world()
+    if data is None:
+        return
+    for feat in data.get("features", []):
+        geom = feat.get("geometry", {})
+        gtype = geom.get("type")
+        coords = geom.get("coordinates", [])
+        polys = []
+        if gtype == "Polygon":
+            polys = [coords]
+        elif gtype == "MultiPolygon":
+            polys = coords
+        for poly in polys:
+            for ring in poly:
+                xs = [p[0] for p in ring]
+                ys = [p[1] for p in ring]
+                if projection == "plate":
+                    ax.plot(xs, ys, color=color, lw=lw, alpha=alpha, zorder=2)
+                elif projection == "ortho":
+                    # convertir lon/lat a coords ortográficas (centro 0,0)
+                    lons = np.array(xs, dtype=float)
+                    lats = np.array(ys, dtype=float)
+                    rr = np.cos(np.radians(lats))
+                    X = rr * np.sin(np.radians(lons))
+                    Y = np.sin(np.radians(lats))
+                    Z = rr * np.cos(np.radians(lons))
+                    visible = Z > 0
+                    # dibujar solo segmentos visibles
+                    seg_x, seg_y = [], []
+                    for i in range(len(X)):
+                        if visible[i]:
+                            seg_x.append(X[i])
+                            seg_y.append(Y[i])
+                        else:
+                            if len(seg_x) > 1:
+                                ax.plot(seg_x, seg_y, color=color, lw=lw, alpha=alpha, zorder=2)
+                            seg_x, seg_y = [], []
+                    if len(seg_x) > 1:
+                        ax.plot(seg_x, seg_y, color=color, lw=lw, alpha=alpha, zorder=2)
 
 RE_KM = 6371.0
 MU_KM3_S2 = 3.986004418e5  # km^3/s^2 (Tierra)
@@ -40,6 +96,7 @@ def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True
         ex = np.linspace(-180, 180, 361)
         ax.plot(ex, 90 * np.ones_like(ex), color="#2a6f3b", lw=0.6, alpha=0.4)
         ax.plot(ex, -90 * np.ones_like(ex), color="#2a6f3b", lw=0.6, alpha=0.4)
+        draw_world_map(ax, "plate", color="#3a6b4a", lw=0.5, alpha=0.7)
 
     if daynight:
         N = 400
@@ -55,8 +112,8 @@ def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True
         zenith = np.arccos(cosz)
         night = zenith > (np.pi / 2)
         darkness = np.clip((zenith - np.pi / 2) / (np.pi / 2), 0.0, 1.0)
-        gray = 0.90 - 0.50 * darkness
-        alpha = np.where(night, 0.18 + 0.42 * darkness, 0.0)
+        gray = 0.85 - 0.45 * darkness
+        alpha = np.where(night, 0.12 + 0.38 * darkness, 0.0)
         rgba = np.zeros((N, N, 4))
         rgba[..., 0] = gray
         rgba[..., 1] = gray
@@ -64,7 +121,7 @@ def ground_track(lat_deg, lon_deg, title, path, color="#1f77b4", show_earth=True
         rgba[..., 3] = alpha
         ax.imshow(rgba, extent=[-180, 180, -90, 90], origin="lower", zorder=1, aspect="auto")
 
-    sc = ax.scatter(lon, lat, c=np.arange(len(lon)), cmap="viridis", s=6, zorder=3)
+    sc = ax.scatter(lon, lat, c=np.arange(len(lon)), cmap="viridis", s=6, zorder=4)
     # cortar en saltos de antimeridiano
     segs = []
     cur = [(lon[0], lat[0])]
@@ -119,6 +176,7 @@ def ground_track_ortho(lat_deg, lon_deg, title, path, color="#1f77b4",
     th = np.linspace(0, 2 * np.pi, 361)
     ax.plot(np.cos(th), np.sin(th), color="#2a6f3b", lw=1.2)
     ax.fill(np.cos(th), np.sin(th), color="#dbe9f4", alpha=0.4)
+    draw_world_map(ax, "ortho", color="#3a6b4a", lw=0.4, alpha=0.6)
 
     # Sombreado día/noche con degradado (solo en el disco visible)
     if daynight:
@@ -129,8 +187,6 @@ def ground_track_ortho(lat_deg, lon_deg, title, path, color="#1f77b4",
         R2 = X * X + Y * Y
         mask = R2 <= 1.0
         Z = np.sqrt(np.clip(1.0 - R2, 0.0, 1.0))
-        # vector del punto en la esfera (unitario)
-        # sun direction
         slat = np.radians(subsolar_lat)
         slon = np.radians(subsolar_lon)
         S = np.array([np.cos(slat) * np.cos(slon),
@@ -138,24 +194,22 @@ def ground_track_ortho(lat_deg, lon_deg, title, path, color="#1f77b4",
                       np.sin(slat)])
         cosz = X * S[0] + Y * S[1] + Z * S[2]
         cosz = np.clip(cosz, -1.0, 1.0)
-        zenith = np.arccos(cosz)  # 0 = subsolar, pi = antisolar
+        zenith = np.arccos(cosz)
         night = zenith > (np.pi / 2)
         darkness = np.clip((zenith - np.pi / 2) / (np.pi / 2), 0.0, 1.0)
-        # degradado gris: terminador claro, antisolar más oscuro (no negro total)
-        gray = 0.88 - 0.55 * darkness
-        alpha = np.where(night, 0.25 + 0.45 * darkness, 0.0)
+        gray = 0.85 - 0.45 * darkness
+        alpha = np.where(night, 0.12 + 0.38 * darkness, 0.0)
         rgba = np.zeros((N, N, 4))
         rgba[..., 0] = gray
         rgba[..., 1] = gray
         rgba[..., 2] = gray + 0.05
         rgba[..., 3] = alpha
-        # enmascarar fuera del disco
         rgba[~mask, 3] = 0.0
         ax.imshow(rgba, extent=[-1, 1, -1, 1], origin="lower", zorder=2)
 
     xs = x[visible]
     ys = y[visible]
-    ax.scatter(xs, ys, c=np.arange(len(xs)), cmap="viridis", s=6, zorder=3)
+    ax.scatter(xs, ys, c=np.arange(len(xs)), cmap="viridis", s=6, zorder=4)
     for i in range(1, len(lat)):
         if not (visible[i] and visible[i - 1]):
             continue

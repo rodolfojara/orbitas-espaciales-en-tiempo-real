@@ -7,6 +7,11 @@ import os
 import sys
 import json
 
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from orbitas_rt.orbit3d import orbit_ground_track
@@ -20,6 +25,49 @@ lat, lon, alt, t = orbit_ground_track(a_km=6871.0, e=0.0, i_deg=51.6,
 
 # Puntos para Leaflet: [lat, lon]
 points = [[float(la), float(lo)] for la, lo in zip(lat, lon)]
+
+# Generar imagen día/noche (equirectangular) para overlay en el mapa web
+subsolar_lon = 30.0
+subsolar_lat = 0.0
+N = 360
+lons = np.linspace(-180, 180, N)
+lats = np.linspace(-90, 90, N)
+LON, LAT = np.meshgrid(lons, lats)
+slat = np.radians(subsolar_lat)
+slon = np.radians(subsolar_lon)
+cosz = (np.sin(slat) * np.sin(np.radians(LAT)) +
+        np.cos(slat) * np.cos(np.radians(LAT)) *
+        np.cos(np.radians(LON) - slon))
+cosz = np.clip(cosz, -1.0, 1.0)
+zenith = np.arccos(cosz)
+night = zenith > (np.pi / 2)
+darkness = np.clip((zenith - np.pi / 2) / (np.pi / 2), 0.0, 1.0)
+gray = 0.85 - 0.45 * darkness
+alpha = np.where(night, 0.12 + 0.38 * darkness, 0.0)
+rgba = np.zeros((N // 2, N, 4))
+# resize lats to N//2
+lats2 = np.linspace(-90, 90, N // 2)
+LON2, LAT2 = np.meshgrid(lons, lats2)
+cosz2 = (np.sin(slat) * np.sin(np.radians(LAT2)) +
+         np.cos(slat) * np.cos(np.radians(LAT2)) *
+         np.cos(np.radians(LON2) - slon))
+cosz2 = np.clip(cosz2, -1.0, 1.0)
+zenith2 = np.arccos(cosz2)
+night2 = zenith2 > (np.pi / 2)
+darkness2 = np.clip((zenith2 - np.pi / 2) / (np.pi / 2), 0.0, 1.0)
+gray2 = 0.85 - 0.45 * darkness2
+alpha2 = np.where(night2, 0.12 + 0.38 * darkness2, 0.0)
+rgba2 = np.zeros((N // 2, N, 4))
+rgba2[..., 0] = gray2
+rgba2[..., 1] = gray2
+rgba2[..., 2] = gray2 + 0.05
+rgba2[..., 3] = alpha2
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.imshow(rgba2, extent=[-180, 180, -90, 90], origin="lower", aspect="auto")
+ax.axis("off")
+fig.tight_layout(pad=0)
+fig.savefig(os.path.join(out, "daynight.png"), dpi=90, transparent=True)
+plt.close(fig)
 
 html = """<!DOCTYPE html>
 <html lang="es">
@@ -66,6 +114,8 @@ html = """<!DOCTYPE html>
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 8, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
   }).addTo(map);
+  // Sombreado día/noche (degradado)
+  L.imageOverlay('daynight.png', [[-90, -180], [90, 180]], {opacity: 0.55, interactive: false}).addTo(map);
   const group = L.featureGroup().addTo(map);
   segments.forEach(seg => {
     if (seg.length < 2) return;
