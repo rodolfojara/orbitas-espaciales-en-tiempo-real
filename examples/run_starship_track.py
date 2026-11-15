@@ -1,9 +1,12 @@
-"""Dibuja la trayectoria suborbital simulada de Starship (S42) sobre mapas.
+"""Trayectorias ilustrativas de Starship sobre el mapa mundial.
 
-Usa la simulación del proyecto (no son datos reales de ningún vuelo) y genera:
-  - examples/output/starship_track.png        (proyección plana)
-  - examples/output/starship_track_ortho.png  (globo)
-  - examples/output/starship_track.html       (mapa web interactivo)
+IMPORTANTE: no son datos reales. Starship no ha realizado (a la fecha) un vuelo
+orbital completo de 10 órbitas. Estas trayectorias son ilustrativas, generadas
+con el modelo orbital del proyecto, para mostrar cómo se verían en el mapa.
+
+Genera:
+  - examples/output/starship_orbital.png / .html  (trayectoria orbital, ~10 órbitas LEO)
+  - examples/output/starship_booster.png         (arco suborbital del booster, ~8 min)
 """
 import os
 import sys
@@ -16,42 +19,42 @@ import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from orbitas_rt import sim
-from orbitas_rt.viz import ground_track, ground_track_ortho
+from orbitas_rt.viz import (ground_track, ground_track_ortho,
+                            leo_ground_track, solar_subsolar_lon, solar_declination)
 
 out = os.path.join(os.path.dirname(__file__), "output")
 os.makedirs(out, exist_ok=True)
 
-# Simulación de ejemplo (S42 ficticio)
-sc = sim.Scenario()
-truth = sim.simulate_truth(sc.truth, surprise=sc.surprise_burn)
-rng = np.random.default_rng(sc.seed)
-meas = sim.make_measurements(*truth, sc.dropouts, rng)
-res = sim.run_tracker(meas, truth[0][-1], sc.nominal, truth)
-
-lat = res["lat"]
-lon = res["lon"]
-
-# PNG planar
-path = os.path.join(out, "starship_track.png")
-ground_track(lat, lon, "Trayectoria suborbital simulada - Starship (S42)",
-             path, subsolar_lon=None, subsolar_lat=None)
-print(f"Guardado: {path}")
-
-# PNG globo
-path2 = os.path.join(out, "starship_track_ortho.png")
-ground_track_ortho(lat, lon, "Trayectoria suborbital simulada - Starship (S42)",
-                   path2, subsolar_lon=None, subsolar_lat=None)
-print(f"Guardado: {path2}")
-
-# Mapa web (Leaflet)
-points = [[float(la), float(lo)] for la, lo in zip(lat, lon)]
-
-# imagen día/noche
-import datetime as _dt
-from orbitas_rt.viz import solar_subsolar_lon, solar_declination
 subsolar_lon = solar_subsolar_lon()
 subsolar_lat = solar_declination()
+
+# --- 1) Trayectoria orbital ilustrativa: ~10 órbitas LEO a ~200 km ---
+lat_o, lon_o, t_o = leo_ground_track(altitude_km=200.0, inclination_deg=28.5,
+                                     raan_deg=0.0,
+                                     n_orbits=10, dt_s=60.0)
+
+path = os.path.join(out, "starship_orbital.png")
+ground_track(lat_o, lon_o, "Starship orbital (ilustrativo, ~10 órbitas LEO, ~200 km)",
+             path, subsolar_lon=subsolar_lon, subsolar_lat=subsolar_lat)
+print(f"Guardado: {path}")
+
+path2 = os.path.join(out, "starship_orbital_ortho.png")
+ground_track_ortho(lat_o, lon_o, "Starship orbital (ilustrativo, ~10 órbitas LEO)",
+                   path2, subsolar_lon=subsolar_lon, subsolar_lat=subsolar_lat)
+print(f"Guardado: {path2}")
+
+# Mapa web orbital
+points_o = [[float(la), float(lo)] for la, lo in zip(lat_o, lon_o)]
+segments_o = []
+cur = [points_o[0]]
+for i in range(1, len(points_o)):
+    if abs(points_o[i][1] - points_o[i-1][1]) > 180:
+        segments_o.append(cur); cur = [points_o[i]]
+    else:
+        cur.append(points_o[i])
+segments_o.append(cur)
+
+# imagen día/noche
 N = 360
 lons = np.linspace(-180, 180, N)
 slat = np.radians(subsolar_lat)
@@ -76,14 +79,14 @@ fig, ax = plt.subplots(figsize=(8, 4))
 ax.imshow(rgba2, extent=[-180, 180, -90, 90], origin="lower", aspect="auto")
 ax.axis("off")
 fig.tight_layout(pad=0)
-fig.savefig(os.path.join(out, "starship_daynight.png"), dpi=90, transparent=True)
+fig.savefig(os.path.join(out, "starship_orbital_daynight.png"), dpi=90, transparent=True)
 plt.close(fig)
 
 html = """<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
-<title>Starship (S42) - trayectoria suborbital</title>
+<title>Starship orbital (ilustrativo)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
@@ -97,10 +100,11 @@ html = """<!DOCTYPE html>
 <body>
 <div id="map"></div>
 <div class="info">
-  <b>Starship (S42) - trayectoria suborbital simulada</b><br/>
-  Lanzamiento desde Starbase, Texas<br/>
+  <b>Starship orbital (ilustrativo)</b><br/>
+  ~10 órbitas LEO, ~200 km<br/>
+  Lanzamiento desde Starbase (ilustrativo)<br/>
   Puntos: __N__<br/>
-  <small>Simulación ilustrativa, no datos reales.</small>
+  <small>No son datos reales.</small>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -123,24 +127,41 @@ html = """<!DOCTYPE html>
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 8, noWrap: true, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
   }).addTo(map);
-  L.imageOverlay('starship_daynight.png', [[-90, -180], [90, 180]], {opacity: 0.85, interactive: false}).addTo(map);
+  L.imageOverlay('starship_orbital_daynight.png', [[-90, -180], [90, 180]], {opacity: 0.85, interactive: false}).addTo(map);
   const group = L.featureGroup().addTo(map);
   segments.forEach(seg => {
     if (seg.length < 2) return;
-    L.polyline(seg, {color: '#d62728', weight: 2.5, opacity: 0.9}).addTo(group);
+    L.polyline(seg, {color: '#d62728', weight: 2, opacity: 0.85}).addTo(group);
   });
   L.circleMarker(points[0], {radius: 7, color: 'green'}).addTo(map).bindPopup('Despegue (Starbase)');
-  L.circleMarker(points[points.length-1], {radius: 7, color: 'red'}).addTo(map).bindPopup('Aterrizaje');
+  L.circleMarker(points[points.length-1], {radius: 7, color: 'red'}).addTo(map).bindPopup('Fin de simulación');
   map.fitBounds(group.getBounds());
 </script>
 </body>
 </html>
 """
-html = html.replace("__N__", str(len(points)))
-html = html.replace("__POINTS__", json.dumps(points))
-
-path_html = os.path.join(out, "starship_track.html")
+html = html.replace("__N__", str(len(points_o)))
+html = html.replace("__POINTS__", json.dumps(points_o))
+path_html = os.path.join(out, "starship_orbital.html")
 with open(path_html, "w", encoding="utf-8") as f:
     f.write(html)
 print(f"Guardado: {path_html}")
-print("Abre starship_track.html en el navegador (o via serve.bat).")
+
+# --- 2) Arco suborbital del booster: ~8 min, aterrizaje cerca del pad ---
+# Aproximación: trayectoria balística corta (no usa el sim suborbital largo).
+# Generamos un arco simple: lat/lon a lo largo de una elipse corta.
+t_b = np.linspace(0, 480, 120)  # 8 min
+# downrange en km, pico ~100 km, aterrizaje ~5 km del pad
+down = 120 * (1 - np.cos(np.pi * t_b / 480))  # 0..240 km ida, vuelta? simplificado
+# mejor: arco que vuelve al pad
+down = 80 * np.sin(np.pi * t_b / 480)  # 0 -> 80 km -> 0
+# lat/lon desde Starbase con azimut 96° (como geo.py)
+from orbitas_rt.geo import destination, STARBASE, DEFAULT_AZIMUTH_DEG
+lat_b, lon_b = destination(STARBASE[0], STARBASE[1], DEFAULT_AZIMUTH_DEG, down * 1000.0)
+path_b = os.path.join(out, "starship_booster.png")
+ground_track(lat_b, lon_b, "Super Heavy booster (ilustrativo, ~8 min, aterrizaje cerca del pad)",
+             path_b, subsolar_lon=subsolar_lon, subsolar_lat=subsolar_lat)
+print(f"Guardado: {path_b}")
+
+print()
+print("NOTA: trayectorias ilustrativas, no datos reales de Starship.")
