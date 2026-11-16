@@ -70,6 +70,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from sgp4.api import Satrec, jday
 from sgp4 import omm
 from orbitas_rt.tle import fetch_gp
+from orbitas_rt.horizons import fetch_vectors
 
 ROOT = os.path.join(os.path.dirname(__file__), "output")
 PORT = 8000
@@ -204,7 +205,59 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
-        if parsed.path == "/api/groups":
+        if parsed.path == "/api/horizons":
+            params = parse_qs(parsed.query)
+            target = params.get("target", ["-85"])[0]
+            start = params.get("start", ["2026-11-15"])[0]
+            stop = params.get("stop", ["2026-11-18"])[0]
+            step = params.get("step", ["1 d"])[0]
+            center = params.get("center", ["@sun"])[0]
+            try:
+                t, r, v = fetch_vectors(target, start, stop, step=step, center=center,
+                                        frame="ECLIPTIC", units="AU-D")
+                traj = [[float(x), float(y)] for x, y in zip(r[:, 0], r[:, 1])]
+                result = {"target": target, "traj": traj, "n": len(traj)}
+                body = json.dumps(result).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(body)
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed.path == "/api/lunar":
+            params = parse_qs(parsed.query)
+            sc = params.get("sc", ["-85"])[0]
+            start = params.get("start", ["2026-11-15"])[0]
+            stop = params.get("stop", ["2026-11-18"])[0]
+            step = params.get("step", ["4 h"])[0]
+            try:
+                t_moon, r_moon, v_moon = fetch_vectors("301", start, stop, step=step,
+                                                        center="399", frame="ECLIPTIC", units="KM-S")
+                t_sc, r_sc, v_sc = fetch_vectors(sc, start, stop, step=step,
+                                                  center="399", frame="ECLIPTIC", units="KM-S")
+                result = {
+                    "sc": sc,
+                    "moon": [[float(x), float(y)] for x, y in zip(r_moon[:, 0], r_moon[:, 1])],
+                    "sc_traj": [[float(x), float(y)] for x, y in zip(r_sc[:, 0], r_sc[:, 1])],
+                    "start": r_sc[0].tolist() if len(r_sc) else [],
+                    "end": r_sc[-1].tolist() if len(r_sc) else [],
+                }
+                body = json.dumps(result).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(body)
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed.path == "/api/groups":
             body = json.dumps({"groups": sorted(set(list(GROUPS.keys()) + list(CURATED_GROUPS.keys())))}).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")

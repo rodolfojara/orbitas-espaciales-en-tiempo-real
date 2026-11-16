@@ -134,7 +134,21 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
 
 - **Trayectorias lunares (cislunar)** desde JPL Horizons (LRO, Danuri, Artemis, etc.):
   ```bash
-  python examples/run_lunar.py
+  python examples/run_lunar.py --list
+  python examples/run_lunar.py --sc -85
+  ```
+
+- **Trayectorias marcianas (heliocéntricas)** desde JPL Horizons (MRO, Perseverance, etc.):
+  ```bash
+  python examples/run_mars.py --list
+  python examples/run_mars.py --sc -74
+  ```
+
+- **Mapas web cislunar y marciano** (canvas, sin tiles):
+  ```bash
+  python examples/serve.py
+  # abrir http://localhost:8000/lunar_map.html
+  # abrir http://localhost:8000/mars_map.html
   ```
 
 - **Seguimiento en vivo** (TLE + EKF 3D, actualiza cada segundo):
