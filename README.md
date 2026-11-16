@@ -136,10 +136,17 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   ```bash
   python examples/run_live_track.py --method gnss   # o satnogs / optical
   python examples/run_live_track.py --auto --method satnogs  # elige sat con obs recientes
-  # en otra terminal: cd examples/output && python -m http.server 8000
   # abrir http://localhost:8000/live_track.html
   ```
   Muestra posición TLE, EKF estimada, última medición real y su antigüedad.
+
+- **Consulta orbital interactiva** (formulario web + API):
+  ```bash
+  python examples/serve.py   # o doble clic en examples/serve.bat
+  # abrir http://localhost:8000/query.html
+  ```
+  Permite consultar por NORAD ID, número de órbitas, paso y fecha de inicio.
+  Genera la trayectoria proyectada sobre el mapa con día/noche.
 
 - **Satélites chilenos (reales, CelesTrak + SGP4)**: SUCHAI-4, FASAT B, SSOT:
   ```bash
