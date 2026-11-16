@@ -27,11 +27,45 @@ import matplotlib.pyplot as plt
 
 from orbitas_rt.horizons import fetch_vectors
 
+SPACECRAFT = {
+    "-25": "Lunar Prospector",
+    "-40": "Clementine",
+    "-85": "LRO",
+    "-86": "Chandrayaan-1",
+    "-152": "Chandrayaan-2 Orbiter",
+    "-153": "Chandrayaan-2 Lander",
+    "-155": "Danuri (KPLO)",
+    "-158": "Chandrayaan-3 Lander",
+    "-164": "Lunar Flashlight",
+    "-169": "Chandrayaan-3 Orbiter",
+    "-177": "GRAIL-A",
+    "-181": "GRAIL-B",
+    "-182": "NEA Scout",
+    "-192": "ARTEMIS-P1 (THEMIS-B)",
+    "-193": "ARTEMIS-P2 (THEMIS-C)",
+    "-240": "SLIM",
+    "-242": "Lunar Trailblazer",
+    "-1023": "Artemis 1",
+    "-1024": "Artemis II",
+    "-1176": "CAPSTONE",
+    "-18": "LCROSS",
+    "-75": "OMOTENASHI",
+    "-101": "EQUULEUS",
+    "-70007": "BioSentinel",
+}
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--sc", default="-85", help="Horizons ID de la nave (default LRO)")
 parser.add_argument("--start", default="2026-11-15", help="fecha inicio YYYY-MM-DD")
 parser.add_argument("--stop", default="2026-11-18", help="fecha fin YYYY-MM-DD")
+parser.add_argument("--list", action="store_true", help="Listar naves disponibles")
 args = parser.parse_args()
+
+if args.list:
+    print("Naves lunares disponibles en Horizons (%d):" % len(SPACECRAFT))
+    for k, v in sorted(SPACECRAFT.items(), key=lambda x: x[1]):
+        print("  %s  %s" % (k.rjust(7), v))
+    sys.exit(0)
 
 out = os.path.join(os.path.dirname(__file__), "output")
 os.makedirs(out, exist_ok=True)
@@ -39,19 +73,6 @@ os.makedirs(out, exist_ok=True)
 START = args.start
 STOP = args.stop
 STEP = "4 h"
-
-SPACECRAFT = {
-    "-85": "LRO",
-    "-155": "Danuri",
-    "-1024": "Artemis II",
-    "-1176": "CAPSTONE",
-    "-164": "Lunar Flashlight",
-    "-240": "SLIM",
-    "-86": "Chandrayaan-1",
-    "-152": "Chandrayaan-2",
-    "-158": "Chandrayaan-3",
-    "-169": "Chandrayaan-3 Orbiter",
-}
 
 sc_id = args.sc
 sc_name = SPACECRAFT.get(sc_id, "sc_%s" % sc_id)
