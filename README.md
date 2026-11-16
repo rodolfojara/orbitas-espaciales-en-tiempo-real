@@ -132,6 +132,11 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   python examples/run_real_starlink.py
   ```
 
+- **Trayectorias lunares (cislunar)** desde JPL Horizons (LRO, Danuri, Artemis, etc.):
+  ```bash
+  python examples/run_lunar.py
+  ```
+
 - **Seguimiento en vivo** (TLE + EKF 3D, actualiza cada segundo):
   ```bash
   python examples/run_live_track.py --method gnss   # o satnogs / optical
