@@ -36,6 +36,24 @@ NAME_ALIASES = {
     "starship": "STARSHIP",
 }
 
+# Grupos curados: nombre de grupo -> lista de NORAD_CAT_ID
+CURATED_GROUPS = {
+    "chile": [69911, 25395, 38011, 60532, 52192, 52191, 52188, 42788],
+    "argentina": [37673],
+    "brasil": [40336, 44883, 47699],
+}
+
+# Grupos por búsqueda de texto: nombre de grupo -> lista de términos de búsqueda
+GROUPS = {
+    "fasat": ["FASAT"],
+    "suchai": ["SUCHAI"],
+    "starlink": ["STARLINK"],
+    "iss": ["ISS"],
+    "starship": ["STARSHIP"],
+    "lemu": ["LEMU NGE"],
+    "ssot": ["SSOT"],
+}
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from sgp4.api import Satrec, jday
@@ -46,23 +64,78 @@ ROOT = os.path.join(os.path.dirname(__file__), "output")
 PORT = 8000
 
 
-def search_satellites(name):
+def fetch_gp_by_norad(norad):
     ctx = ssl._create_unverified_context()
-    term = NAME_ALIASES.get(name.strip().lower(), name.strip())
-    url = "https://celestrak.org/NORAD/elements/gp.php?NAME=%s&FORMAT=json" % urllib.parse.quote(term)
+    url = "https://celestrak.org/NORAD/elements/gp.php?CATNR=%d&FORMAT=json" % norad
     try:
         data = json.loads(urllib.request.urlopen(url, context=ctx, timeout=20).read().decode())
-    except Exception as e:
-        return {"error": str(e), "results": []}
+        return data[0] if data else None
+    except Exception:
+        return None
+
+
+def search_satellites(name):
+    ctx = ssl._create_unverified_context()
+    key = name.strip().lower()
     results = []
-    for d in data[:20]:
-        results.append({
-            "name": d.get("OBJECT_NAME"),
-            "norad": d.get("NORAD_CAT_ID"),
-            "inc": d.get("INCLINATION"),
-            "epoch": d.get("EPOCH"),
-        })
-    return {"query": term, "results": results}
+    seen = set()
+    is_group = False
+    terms = []
+
+    if key in CURATED_GROUPS:
+        is_group = True
+        terms = ["curated: %s" % key]
+        for norad in CURATED_GROUPS[key]:
+            d = fetch_gp_by_norad(norad)
+            if d and d.get("NORAD_CAT_ID") not in seen:
+                seen.add(d.get("NORAD_CAT_ID"))
+                results.append({
+                    "name": d.get("OBJECT_NAME"),
+                    "norad": d.get("NORAD_CAT_ID"),
+                    "inc": d.get("INCLINATION"),
+                    "epoch": d.get("EPOCH"),
+                })
+    elif key in GROUPS:
+        is_group = True
+        terms = GROUPS[key]
+        for term in terms:
+            url = "https://celestrak.org/NORAD/elements/gp.php?NAME=%s&FORMAT=json" % urllib.parse.quote(term)
+            try:
+                data = json.loads(urllib.request.urlopen(url, context=ctx, timeout=20).read().decode())
+            except Exception:
+                continue
+            for d in data:
+                norad = d.get("NORAD_CAT_ID")
+                if norad in seen:
+                    continue
+                seen.add(norad)
+                results.append({
+                    "name": d.get("OBJECT_NAME"),
+                    "norad": norad,
+                    "inc": d.get("INCLINATION"),
+                    "epoch": d.get("EPOCH"),
+                })
+    else:
+        term = NAME_ALIASES.get(key, name.strip())
+        terms = [term]
+        url = "https://celestrak.org/NORAD/elements/gp.php?NAME=%s&FORMAT=json" % urllib.parse.quote(term)
+        try:
+            data = json.loads(urllib.request.urlopen(url, context=ctx, timeout=20).read().decode())
+        except Exception as e:
+            return {"error": str(e), "results": []}
+        for d in data[:20]:
+            norad = d.get("NORAD_CAT_ID")
+            if norad in seen:
+                continue
+            seen.add(norad)
+            results.append({
+                "name": d.get("OBJECT_NAME"),
+                "norad": norad,
+                "inc": d.get("INCLINATION"),
+                "epoch": d.get("EPOCH"),
+            })
+
+    return {"query": name.strip(), "group": is_group, "terms": terms, "results": results[:50]}
 
 
 def propagate(norad, norbits, step_min, start_dt):
@@ -120,7 +193,14 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
-        if parsed.path == "/api/search":
+        if parsed.path == "/api/groups":
+            body = json.dumps({"groups": sorted(set(list(GROUPS.keys()) + list(CURATED_GROUPS.keys())))}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(body)
+        elif parsed.path == "/api/search":
             params = parse_qs(parsed.query)
             name = params.get("name", [""])[0]
             result = search_satellites(name)

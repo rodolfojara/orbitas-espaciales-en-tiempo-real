@@ -20,6 +20,9 @@
 </head>
 <body>
 <div class="panel">
+  <label>Grupo: <select id="group" onchange="searchGroup()" style="width:120px;padding:6px;border-radius:4px;border:1px solid #444;background:#0f3460;color:#eee;">
+    <option value="">-- seleccionar --</option>
+  </select></label>
   <label>Buscar nombre: <input id="search" type="text" placeholder="ISS, SSOT, SUCHAI..." style="width:140px"/></label>
   <button onclick="searchSat()">Buscar</button>
   <label>NORAD ID: <input id="norad" type="number" value="25544" style="width:80px"/></label>
@@ -78,6 +81,24 @@
     return canvas.toDataURL();
   }
 
+  async function loadGroups() {
+    try {
+      const res = await fetch('/api/groups');
+      const data = await res.json();
+      const sel = document.getElementById('group');
+      data.groups.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g; opt.textContent = g;
+        sel.appendChild(opt);
+      });
+    } catch (e) {}
+  }
+  async function searchGroup() {
+    const g = document.getElementById('group').value;
+    if (!g) return;
+    document.getElementById('search').value = g;
+    await searchSat();
+  }
   async function searchSat() {
     const name = document.getElementById('search').value.trim();
     if (!name) return;
@@ -169,6 +190,7 @@
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   document.getElementById('start').value = now.toISOString().slice(0,16);
+  loadGroups();
 </script>
 </body>
 </html>
