@@ -134,10 +134,11 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
 
 - **Seguimiento en vivo** (TLE + EKF 3D, actualiza cada segundo):
   ```bash
-  python examples/run_live_track.py
+  python examples/run_live_track.py --method gnss   # o satnogs / optical
   # en otra terminal: cd examples/output && python -m http.server 8000
   # abrir http://localhost:8000/live_track.html
   ```
+  Muestra posición TLE, EKF estimada, última medición real y su antigüedad.
 
 - **Satélites chilenos (reales, CelesTrak + SGP4)**: SUCHAI-4, FASAT B, SSOT:
   ```bash
