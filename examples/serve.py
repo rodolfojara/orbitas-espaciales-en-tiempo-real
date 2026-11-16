@@ -39,7 +39,7 @@ NAME_ALIASES = {
 # Grupos curados: nombre de grupo -> lista de NORAD_CAT_ID
 CURATED_GROUPS = {
     "chile": [69911, 25395, 38011, 60532, 52192, 52191, 52188, 42788],
-    "argentina": [37673],
+    "argentina": [37673, 40272, 40941, 39153, 39440, 20442],
     "brasil": [40336, 44883, 47699],
 }
 
@@ -52,6 +52,17 @@ GROUPS = {
     "starship": ["STARSHIP"],
     "lemu": ["LEMU NGE"],
     "ssot": ["SSOT"],
+    "galileo": ["GALILEO"],
+    "sentinel": ["SENTINEL"],
+    "tiangong": ["TIANGONG"],
+    "beidou": ["BEIDOU"],
+    "gps": ["GPS"],
+    "glonass": ["GLONASS"],
+    "goes": ["GOES"],
+    "europa": ["GALILEO", "SENTINEL", "ENVISAT"],
+    "china": ["CSS", "BEIDOU", "GAOFEN"],
+    "rusia": ["GLONASS", "SOYUZ", "PROGRESS"],
+    "usa": ["GPS", "GOES", "STARLINK"],
 }
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
