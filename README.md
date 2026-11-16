@@ -132,6 +132,13 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   python examples/run_real_starlink.py
   ```
 
+- **Seguimiento en vivo** (TLE + EKF 3D, actualiza cada segundo):
+  ```bash
+  python examples/run_live_track.py
+  # en otra terminal: cd examples/output && python -m http.server 8000
+  # abrir http://localhost:8000/live_track.html
+  ```
+
 - **Satélites chilenos (reales, CelesTrak + SGP4)**: SUCHAI-4, FASAT B, SSOT:
   ```bash
   python examples/run_chile_satellites.py
