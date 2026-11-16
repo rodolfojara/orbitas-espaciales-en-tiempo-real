@@ -41,7 +41,20 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--catnr", type=int, default=25544, help="NORAD_CAT_ID (default ISS)")
 parser.add_argument("--method", choices=["satnogs", "gnss", "optical"], default="gnss")
 parser.add_argument("--duration", type=int, default=120, help="segundos")
+parser.add_argument("--auto", action="store_true", help="Elegir satélite con obs SatNOGS recientes")
 args = parser.parse_args()
+
+if args.auto:
+    from orbitas_rt.measurements import find_satellites_with_recent_obs
+    cands = find_satellites_with_recent_obs(hours=24, limit=10)
+    if cands:
+        print("Satélites con observaciones SatNOGS recientes:")
+        for norad, tx, ts, tle in cands[:10]:
+            print("  NORAD %s  obs_end=%s  %s" % (norad, ts.isoformat(), tx))
+        args.catnr = cands[0][0]
+        print("Usando NORAD %d" % args.catnr)
+    else:
+        print("No se encontraron observaciones recientes; usando default.")
 
 ctx = ssl._create_unverified_context()
 gp = fetch_gp(args.catnr)

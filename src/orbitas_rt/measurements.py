@@ -118,6 +118,39 @@ class SimulatedOpticalSource:
                            method="Óptico (simulado)", noise_m=self.noise_m)
 
 
+def find_satellites_with_recent_obs(hours=24, limit=20):
+    """Busca satélites con observaciones SatNOGS completadas recientemente.
+
+    Devuelve lista de (norad_cat_id, sat_name, obs_end_time).
+    """
+    from datetime import datetime, timezone, timedelta
+    ctx = ssl._create_unverified_context()
+    since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
+    url = ("https://network.satnogs.org/api/observations/"
+           "?status=good&end__gte=%s&ordering=-end&page_size=%d" % (since, limit))
+    try:
+        data = json.loads(urllib.request.urlopen(url, context=ctx, timeout=20).read().decode())
+    except Exception:
+        return []
+    results = []
+    seen = set()
+    for obs in data:
+        norad = obs.get("norad_cat_id")
+        if norad in seen:
+            continue
+        seen.add(norad)
+        try:
+            ts = datetime.fromisoformat(obs["end"].replace("Z", "+00:00"))
+        except Exception:
+            continue
+        # Incluir el TLE de la observación (si está disponible)
+        tle = None
+        if obs.get("tle1") and obs.get("tle2"):
+            tle = (obs.get("tle0", ""), obs["tle1"], obs["tle2"])
+        results.append((norad, obs.get("transmitter_description", ""), ts, tle))
+    return results
+
+
 def quality_from_age(age_s):
     """Clasifica la calidad de la estimación según la antigüedad de la última medición."""
     if age_s is None:
