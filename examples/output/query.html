@@ -20,6 +20,8 @@
 </head>
 <body>
 <div class="panel">
+  <label>Buscar nombre: <input id="search" type="text" placeholder="ISS, SSOT, SUCHAI..." style="width:140px"/></label>
+  <button onclick="searchSat()">Buscar</button>
   <label>NORAD ID: <input id="norad" type="number" value="25544" style="width:80px"/></label>
   <label>Órbitas: <input id="norbits" type="number" value="3" min="1" max="20" style="width:60px"/></label>
   <label>Paso (min): <input id="step" type="number" value="2" min="0.5" max="10" step="0.5" style="width:60px"/></label>
@@ -27,6 +29,7 @@
   <button onclick="runQuery()">Consultar y proyectar</button>
   <span id="status" style="font-size:12px;color:#aaa;"></span>
 </div>
+<div id="searchResults" style="padding:6px 16px; background:#0f3460; font-size:12px; display:none;"></div>
 <div id="map"></div>
 <div class="info" id="info">Ingrese parámetros y pulse "Consultar y proyectar". (Requiere serve.py)</div>
 <div class="legend" id="legend" style="display:none;">
@@ -73,6 +76,34 @@
     }
     ctx.putImageData(img, 0, 0);
     return canvas.toDataURL();
+  }
+
+  async function searchSat() {
+    const name = document.getElementById('search').value.trim();
+    if (!name) return;
+    const resDiv = document.getElementById('searchResults');
+    resDiv.style.display = 'block';
+    resDiv.textContent = 'Buscando...';
+    try {
+      const res = await fetch('/api/search?name=' + encodeURIComponent(name));
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (!data.results || !data.results.length) {
+        resDiv.textContent = 'Sin resultados para "' + name + '".';
+        return;
+      }
+      resDiv.innerHTML = 'Resultados para "' + data.query + '":<br/>' +
+        data.results.map(r =>
+          '<a href="#" onclick="selectSat(' + r.norad + ');return false;" style="color:#4fc3f7;margin-right:12px;">' +
+          r.name + ' (NORAD ' + r.norad + ', inc ' + (r.inc||'?').toFixed(1) + '°)</a>'
+        ).join(' ');
+    } catch (e) {
+      resDiv.textContent = 'Error: ' + e.message;
+    }
+  }
+  function selectSat(norad) {
+    document.getElementById('norad').value = norad;
+    document.getElementById('searchResults').style.display = 'none';
   }
 
   async function runQuery() {

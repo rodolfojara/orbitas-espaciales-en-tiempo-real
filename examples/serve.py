@@ -13,9 +13,25 @@ import sys
 import json
 import ssl
 import urllib.request
+import urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime, timezone, timedelta
+
+# Aliases: nombres comunes -> términos de búsqueda en CelesTrak
+NAME_ALIASES = {
+    "ssot": "SSOT",
+    "suchai": "SUCHAI",
+    "fasat": "FASAT",
+    "fasat charlie": "FASAT",
+    "fasat bravo": "FASAT B",
+    "fasat alpha": "FASAT",
+    "fasat delta": "FASAT",
+    "iss": "ISS",
+    "zarya": "ISS",
+    "starlink": "STARLINK",
+    "starship": "STARSHIP",
+}
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
@@ -25,6 +41,25 @@ from orbitas_rt.tle import fetch_gp
 
 ROOT = os.path.join(os.path.dirname(__file__), "output")
 PORT = 8000
+
+
+def search_satellites(name):
+    ctx = ssl._create_unverified_context()
+    term = NAME_ALIASES.get(name.strip().lower(), name.strip())
+    url = "https://celestrak.org/NORAD/elements/gp.php?NAME=%s&FORMAT=json" % urllib.parse.quote(term)
+    try:
+        data = json.loads(urllib.request.urlopen(url, context=ctx, timeout=20).read().decode())
+    except Exception as e:
+        return {"error": str(e), "results": []}
+    results = []
+    for d in data[:20]:
+        results.append({
+            "name": d.get("OBJECT_NAME"),
+            "norad": d.get("NORAD_CAT_ID"),
+            "inc": d.get("INCLINATION"),
+            "epoch": d.get("EPOCH"),
+        })
+    return {"query": term, "results": results}
 
 
 def propagate(norad, norbits, step_min, start_dt):
@@ -82,7 +117,17 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
-        if parsed.path == "/api/query":
+        if parsed.path == "/api/search":
+            params = parse_qs(parsed.query)
+            name = params.get("name", [""])[0]
+            result = search_satellites(name)
+            body = json.dumps(result).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(body)
+        elif parsed.path == "/api/query":
             params = parse_qs(parsed.query)
             try:
                 norad = int(params.get("norad", ["25544"])[0])
