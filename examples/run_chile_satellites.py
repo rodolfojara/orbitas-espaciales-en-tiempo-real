@@ -46,7 +46,8 @@ ctx = ssl._create_unverified_context()
 sats = [
     {"catnr": 69911, "name": "SUCHAI-4", "color": "#d62728"},
     {"catnr": 25395, "name": "FASAT B", "color": "#1f77b4"},
-    {"catnr": 38011, "name": "SSOT", "color": "#2ca02c"},
+    {"catnr": 38011, "name": "SSOT (FASAT-C)", "color": "#2ca02c"},
+    {"catnr": 60532, "name": "LEMU NGE", "color": "#9467bd"},
 ]
 
 subsolar_lon = solar_subsolar_lon()
@@ -167,7 +168,7 @@ ax.set_xlim(-180, 180)
 ax.set_ylim(-90, 90)
 ax.set_xlabel("longitud (deg)")
 ax.set_ylabel("latitud (deg)")
-ax.set_title("Satélites chilenos (reales, CelesTrak + SGP4): SUCHAI-4, FASAT B, SSOT")
+ax.set_title("Satélites chilenos (reales, CelesTrak + SGP4): SUCHAI-4, FASAT B, SSOT, LEMU NGE")
 ax.grid(alpha=0.3, linestyle=":")
 ax.legend(fontsize=8, loc="upper right")
 fig.tight_layout()
@@ -248,7 +249,8 @@ html = """<!DOCTYPE html>
 <div class="legend">
   <span style="color:#d62728">●</span> SUCHAI-4 (en órbita)<br/>
   <span style="color:#1f77b4">●</span> FASAT B (sin tx ~2014)<br/>
-  <span style="color:#2ca02c">●</span> SSOT (en órbita)<br/>
+  <span style="color:#2ca02c">●</span> SSOT / FASAT-C (en órbita)<br/>
+  <span style="color:#9467bd">●</span> LEMU NGE (en órbita)<br/>
   <span style="color:gold">★</span> Posición actual
 </div>
 <div class="hist">
@@ -260,11 +262,12 @@ html = """<!DOCTYPE html>
   • SUCHAI-4 (2026, Transporter-17): en órbita.<br/>
   • PlantSat (2022): reentró.<br/><br/>
   <b>FASAT</b><br/>
-  • FASAT-Alfa (1995): no se separó del portador.<br/>
-  • FASAT-Bravo (1998): dejó de transmitir ~2014.<br/>
-  • FASAT-Charlie (2001): sigue operativo (FACH).<br/>
-  • FASAT-Delta (2011): falló, desautorizado ~2026.<br/><br/>
-  <b>SSOT</b> (2011): en órbita, obs. terrestre.
+  • FASAT-Alfa (1995, Plesetsk): no se separó del portador.<br/>
+  • FASAT-Bravo (1998, Baikonur): dejó de transmitir ~2014.<br/>
+  • FASAT-Charlie = SSOT (2011, Kourou): en órbita, operativo.<br/>
+  • FASAT-Delta (2023, Vandenberg): falló, desautorizado ~2026.<br/><br/>
+  <b>SSOT / FASAT-Charlie</b> (2011): en órbita, obs. terrestre.<br/>
+  <b>LEMU NGE</b> (2024): en órbita (LEMU, Chile).
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
