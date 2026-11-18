@@ -3,7 +3,7 @@
 Estimación de la posición de una nave **en todo momento**, incluso cuando el
 webcast deja de mostrar datos.
 
-![Órbita Tierra–Marte y seguimiento LEO con Hubble](docs/images/Orbita%20tierra-marte%20y%20recuadro%20LEO.png)
+![Órbita Tierra–Marte y seguimiento LEO con Hubble](docs/images/Orbita-tierra-marte-739x251.png)
 
 La idea: mantener un **estado** (posición y velocidad), **propagarlo** con un
 modelo físico y **corregirlo** cada vez que llega una medición (por ejemplo,
