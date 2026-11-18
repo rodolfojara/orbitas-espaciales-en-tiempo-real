@@ -153,6 +153,14 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   # abrir http://localhost:8000/mars_map.html
   ```
 
+- **Estaciones de rastreo de satélites** (mapa mundial con filtro por operador):
+  ```bash
+  python examples/serve.py
+  # abrir http://localhost:8000/tracking_stations.html
+  ```
+  Incluye NASA DSN, ESA ESTRACK, Roscosmos, CNSA, KSAT, SSC, CONAE, SANSA, etc.
+  Incluye Peldehue/Colina (Chile, ex estación, ahora SSC) y estaciones en Argentina.
+
 - **Seguimiento en vivo** (TLE + EKF 3D, actualiza cada segundo):
   ```bash
   python examples/run_live_track.py --method gnss   # o satnogs / optical

@@ -14,6 +14,8 @@ import json
 import ssl
 import urllib.request
 import urllib.parse
+
+STATIONS_FILE = os.path.join(os.path.dirname(__file__), "..", "src", "orbitas_rt", "data", "tracking_stations.json")
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime, timezone, timedelta
@@ -257,6 +259,15 @@ class Handler(SimpleHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed.path == "/api/stations":
+            with open(STATIONS_FILE, encoding="utf-8") as f:
+                data = json.load(f)
+            body = json.dumps(data).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(body)
         elif parsed.path == "/api/groups":
             body = json.dumps({"groups": sorted(set(list(GROUPS.keys()) + list(CURATED_GROUPS.keys())))}).encode()
             self.send_response(200)
