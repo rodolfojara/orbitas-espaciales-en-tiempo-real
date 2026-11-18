@@ -20,10 +20,13 @@
 </head>
 <body>
 <div class="panel">
-  <label>Filtrar por operador: <select id="filter" onchange="applyFilter()" style="width:200px;">
+  <label>Operador: <select id="filter" onchange="applyFilter()" style="width:180px;">
     <option value="all">Todos</option>
   </select></label>
-  <label>Filtrar por tipo: <select id="typeFilter" onchange="applyFilter()" style="width:140px;">
+  <label>Región: <select id="regionFilter" onchange="applyFilter()" style="width:160px;">
+    <option value="all">Todas</option>
+  </select></label>
+  <label>Tipo: <select id="typeFilter" onchange="applyFilter()" style="width:140px;">
     <option value="all">Todos</option>
     <option value="deep_space">Espacio profundo</option>
     <option value="leo_meo">LEO/MEO</option>
@@ -70,17 +73,27 @@
       opt.value = op; opt.textContent = op;
       sel.appendChild(opt);
     });
+    // populate region filter
+    const regions = [...new Set(allStations.map(s => s.region))].sort();
+    const rsel = document.getElementById('regionFilter');
+    regions.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r; opt.textContent = r;
+      rsel.appendChild(opt);
+    });
     applyFilter();
   }
 
   function applyFilter() {
     const opFilter = document.getElementById('filter').value;
+    const regionFilter = document.getElementById('regionFilter').value;
     const typeFilter = document.getElementById('typeFilter').value;
     // remove old markers
     markers.forEach(m => map.removeLayer(m));
     markers = [];
     const filtered = allStations.filter(s => {
       if (opFilter !== 'all' && s.operator !== opFilter) return false;
+      if (regionFilter !== 'all' && s.region !== regionFilter) return false;
       if (typeFilter !== 'all' && s.type !== typeFilter) return false;
       return true;
     });
@@ -91,13 +104,15 @@
       }).addTo(map);
       m.bindPopup('<b>' + s.name + '</b><br/>' +
         'Operador: ' + s.operator + '<br/>' +
-        'País: ' + s.country + '<br/>' +
+        'País: ' + s.country + ' (' + s.region + ')<br/>' +
         'Tipo: ' + (s.type === 'deep_space' ? 'Espacio profundo' : 'LEO/MEO') + '<br/>' +
+        'Bandas: ' + (s.bands || '-') + '<br/>' +
         s.desc);
       m.on('click', () => {
         document.getElementById('info').innerHTML = '<b>' + s.name + '</b><br/>' +
-          'Operador: ' + s.operator + '<br/>País: ' + s.country + '<br/>' +
+          'Operador: ' + s.operator + '<br/>País: ' + s.country + ' (' + s.region + ')<br/>' +
           'Tipo: ' + (s.type === 'deep_space' ? 'Espacio profundo' : 'LEO/MEO') + '<br/>' +
+          'Bandas: ' + (s.bands || '-') + '<br/>' +
           s.desc;
       });
       markers.push(m);
