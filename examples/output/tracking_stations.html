@@ -107,7 +107,7 @@
     markers.forEach(m => map.removeLayer(m));
     markers = [];
     const filtered = allStations.filter(s => {
-      if (opFilter !== 'all' && s.operator !== opFilter) return false;
+      if (opFilter !== 'all' && !s.operator.includes(opFilter)) return false;
       if (regionFilter !== 'all' && s.region !== regionFilter) return false;
       if (typeFilter !== 'all' && s.type !== typeFilter) return false;
       if (facFilter !== 'all' && s.facility_type !== facFilter) return false;
