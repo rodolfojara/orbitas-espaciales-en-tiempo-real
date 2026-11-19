@@ -153,13 +153,14 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   # abrir http://localhost:8000/mars_map.html
   ```
 
-- **Estaciones de rastreo de satélites** (mapa mundial con filtro por operador):
+- **Estaciones de rastreo de satélites** (mapa mundial con filtro por operador, región, tipo):
   ```bash
   python examples/serve.py
   # abrir http://localhost:8000/tracking_stations.html
   ```
   Incluye NASA DSN, ESA ESTRACK, Roscosmos, CNSA, KSAT, SSC, CONAE, SANSA, etc.
-  Incluye Peldehue/Colina (Chile, ex estación, ahora SSC) y estaciones en Argentina.
+  Incluye Peldehue/Colina (Chile, NASA→U. de Chile→SSC) y estaciones en Argentina.
+  Documentación de organismos: `docs/TRACKING_ORGANIZATIONS.md`.
 
 - **Seguimiento en vivo** (TLE + EKF 3D, actualiza cada segundo):
   ```bash
