@@ -78,9 +78,34 @@ estaciones (`examples/output/tracking_stations.html`).
 - **Procedimiento**: Seguimiento de satélites y misiones lunares (SLIM, Hayabusa).
 
 ### KARI (Korea Aerospace Research Institute)
-- **Estaciones**: Naro Space Center
-- **Instrumentos**: Red de seguimiento
-- **Procedimiento**: Seguimiento de satélites coreanos (Danuri/KPLO).
+- **Estaciones**: Naro Space Center, Daejeon
+- **Instrumentos**: Red de seguimiento y comando (KGSN)
+- **Procedimiento**: Seguimiento de satélites coreanos (Danuri/KPLO). Usa estaciones propias + acuerdos con NASA (DSN) para misiones lunares.
+
+### ISRO (Indian Space Research Organisation) — cómo obtiene datos
+- **Red propia**: ISTRAC (Indian Space Research Organisation Telemetry, Tracking and Command Network). Estaciones en Sriharikota, Bangalore, Lucknow, Mauritius, Brunei, Indonesia, etc.
+- **Instrumentos**: Antenas de 18m y 32m, radar, telemetría.
+- **Procedimiento**: Seguimiento de satélites y lanzamientos indios. Para misiones interplanetarias (Chandrayaan, Mangalyaan) usa DSN de NASA (acuerdo) + estaciones propias.
+- **Historia**: Desarrollada desde los 70s. Red global con estaciones en varios países.
+
+### JAXA (Japan Aerospace Exploration Agency) — cómo obtiene datos
+- **Red propia**: JAXA Tracking Network. Estaciones en Tsukuba, Uchinoura, Tanegashima, Okinawa, etc.
+- **Instrumentos**: Antenas de 10m, 20m, 34m, 64m (Usuda). Radar.
+- **Procedimiento**: Seguimiento de satélites y misiones lunares/marcianas (Hayabusa, SLIM, MMX). Para espacio profundo usa Usuda Deep Space Center (64m) + acuerdos con NASA DSN y ESA ESTRACK.
+- **Historia**: Desarrollada desde los 60s (NASDA, ISAS). Usuda es la estación de espacio profundo japonesa.
+- **Nota**: SLIM (2023) y Hayabusa2 usaron la red JAXA + DSN de NASA.
+
+### KARI — cómo obtiene datos
+- **Red propia**: KGSN (Korea Ground Station Network). Estaciones en Naro, Daejeon.
+- **Procedimiento**: Seguimiento de satélites coreanos. Para Danuri/KPLO (misión lunar) usa DSN de NASA (acuerdo) + estaciones propias.
+- **Historia**: Desarrollada desde los 2000s. Danuri es la primera misión lunar coreana.
+
+### Nota sobre agencias medianas
+Las agencias de tamaño medio (ISRO, JAXA, KARI, CONAE, etc.) **no tienen redes globales completas**. Para misiones interplanetarias o lunares, dependen de:
+1. **Acuerdos con NASA DSN** (Goldstone, Madrid, Canberra) — el más común.
+2. **Acuerdos con ESA ESTRACK** (Cebreros, Malargüe, New Norcia).
+3. **Estaciones propias** para LEO/MEO.
+4. **Redes comerciales** (KSAT, SSC) para seguimiento rutinario.
 
 ---
 

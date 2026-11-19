@@ -397,7 +397,7 @@
   },
   {
     "name": "Ushuaia (propuesta)",
-    "operator": "CONAE / FACH?",
+    "operator": "CONAE",
     "country": "Argentina",
     "region": "Sudamérica",
     "lat": -54.8,
@@ -453,7 +453,7 @@
     "type": "antenna",
     "bands": "S, X",
     "facility_type": "control",
-    "desc": "Santiago, Chile. Centro de control satelital de la Fuerza Aérea de Chile. Originalmente en Base del Bosque, ahora en el Centro Espacial Nacional."
+    "desc": "Santiago, Chile. Centro de control satelital de la Fuerza Aérea de Chile (FACH). NO es estación de rastreo. Originalmente en Base del Bosque, ahora en el Centro Espacial Nacional."
   },
   {
     "name": "Base del Bosque (FACH, histórico)",
