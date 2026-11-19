@@ -364,19 +364,6 @@
     "instrument": "antenna"
   },
   {
-    "name": "Santiago (INTA)",
-    "operator": "INTA",
-    "country": "Chile",
-    "region": "Sudamérica",
-    "lat": -33.45,
-    "lon": -70.66,
-    "type": "leo_meo",
-    "bands": "S, X",
-    "desc": "Santiago, Chile. Estación INTA.",
-    "facility_type": "tracking",
-    "instrument": "antenna"
-  },
-  {
     "name": "Santiago (SSC)",
     "operator": "SSC",
     "country": "Chile",
@@ -438,19 +425,6 @@
     "type": "leo_meo",
     "bands": "S, X",
     "desc": "Ushuaia, Argentina. Estación de rastreo en el extremo sur (posible, por verificar).",
-    "facility_type": "tracking",
-    "instrument": "antenna"
-  },
-  {
-    "name": "Punta Arenas (planificada)",
-    "operator": "Chile (futuro)",
-    "country": "Chile",
-    "region": "Sudamérica",
-    "lat": -53.16,
-    "lon": -70.92,
-    "type": "leo_meo",
-    "bands": "S, X",
-    "desc": "Punta Arenas, Chile. Estación de rastreo planificada por Chile en futuro cercano.",
     "facility_type": "tracking",
     "instrument": "antenna"
   },

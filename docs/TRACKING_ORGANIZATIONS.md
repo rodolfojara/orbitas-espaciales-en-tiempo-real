@@ -63,7 +63,8 @@ estaciones (`examples/output/tracking_stations.html`).
 
 ### INTA (Instituto Nacional de Técnica Aeroespacial, España)
 - **Operador**: INTA
-- **Estaciones**: Maspalomas (Canarias), Santiago (Chile)
+- **Estaciones**: Maspalomas (Gran Canaria, España), Torrejón (Madrid, España)
+- **Nota**: INTA NO tiene estación en Santiago de Chile. Las estaciones INTA están en España.
 - **Instrumentos**: Antenas de seguimiento
 - **Procedimiento**: Seguimiento de satélites, telemetría.
 
