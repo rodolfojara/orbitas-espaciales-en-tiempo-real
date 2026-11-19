@@ -69,8 +69,16 @@
   };
 
   async function loadStations() {
-    const res = await fetch('/api/stations');
-    allStations = await res.json();
+    try {
+      const res = await fetch('/api/stations');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      allStations = await res.json();
+      console.log('Loaded', allStations.length, 'stations');
+    } catch (e) {
+      console.error('Error loading stations:', e);
+      document.getElementById('count').textContent = 'Error cargando estaciones: ' + e.message;
+      return;
+    }
     // populate operator filter
     const ops = [...new Set(allStations.map(s => s.operator))].sort();
     const sel = document.getElementById('filter');
@@ -114,6 +122,7 @@
         'Operador: ' + s.operator + '<br/>' +
         'País: ' + s.country + ' (' + s.region + ')<br/>' +
         'Tipo: ' + (s.type === 'deep_space' ? 'Espacio profundo' : 'LEO/MEO') + '<br/>' +
+        'Instrumento: ' + (s.instrument || '-') + '<br/>' +
         'Función: ' + (s.facility_type === 'control' ? 'Control' : s.facility_type === 'both' ? 'Rastreo + Control' : 'Rastreo') + '<br/>' +
         'Bandas: ' + (s.bands || '-') + '<br/>' +
         s.desc);
@@ -121,6 +130,8 @@
         document.getElementById('info').innerHTML = '<b>' + s.name + '</b><br/>' +
           'Operador: ' + s.operator + '<br/>País: ' + s.country + ' (' + s.region + ')<br/>' +
           'Tipo: ' + (s.type === 'deep_space' ? 'Espacio profundo' : 'LEO/MEO') + '<br/>' +
+          'Instrumento: ' + (s.instrument || '-') + '<br/>' +
+          'Función: ' + (s.facility_type === 'control' ? 'Control' : s.facility_type === 'both' ? 'Rastreo + Control' : 'Rastreo') + '<br/>' +
           'Bandas: ' + (s.bands || '-') + '<br/>' +
           s.desc;
       });

@@ -6,10 +6,11 @@
     "region": "Norteamérica",
     "lat": 35.4267,
     "lon": -116.89,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "S, X, Ka",
     "desc": "California, USA. Antenas de 34m y 70m. Deep Space Network. Una de las 3 estaciones DSN (con Madrid y Canberra).",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Madrid (Robledo)",
@@ -18,10 +19,11 @@
     "region": "Europa",
     "lat": 40.4314,
     "lon": -4.2481,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "S, X, Ka",
     "desc": "Robledo de Chavela, España. Antenas de 34m y 70m. DSN.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Canberra (Tidbinbilla)",
@@ -30,10 +32,11 @@
     "region": "Oceanía",
     "lat": -35.4014,
     "lon": 148.9819,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "S, X, Ka",
     "desc": "Tidbinbilla, Australia. Antenas de 34m y 70m. DSN.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Cebreros",
@@ -42,10 +45,11 @@
     "region": "Europa",
     "lat": 40.4528,
     "lon": -4.3683,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "X, Ka",
     "desc": "Cebreros, España. Antena de 35m. ESA Deep Space.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Malargüe",
@@ -54,10 +58,11 @@
     "region": "Sudamérica",
     "lat": -35.7767,
     "lon": -69.3978,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "X, Ka",
     "desc": "Malargüe, Argentina. Antena de 35m. ESA Deep Space. (Distinta de la estación CONAE de Malargüe.)",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "New Norcia",
@@ -66,10 +71,11 @@
     "region": "Oceanía",
     "lat": -31.0486,
     "lon": 116.1913,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "X, Ka",
     "desc": "New Norcia, Australia. Antena de 35m. ESA Deep Space.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Kourou",
@@ -78,10 +84,11 @@
     "region": "Sudamérica",
     "lat": 5.2394,
     "lon": -52.7683,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Kourou, Guayana Francesa. Estación ESA de seguimiento LEO/MEO.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Santa Maria",
@@ -90,10 +97,11 @@
     "region": "Europa",
     "lat": 36.9725,
     "lon": -25.1719,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Santa Maria, Azores. Estación ESA.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Kiruna",
@@ -102,10 +110,11 @@
     "region": "Europa",
     "lat": 67.8569,
     "lon": 20.9656,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Kiruna, Suecia. Estación polar ESA/SSC. Muy usada para órbitas polares.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Redu",
@@ -114,10 +123,11 @@
     "region": "Europa",
     "lat": 50.0022,
     "lon": 5.1442,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Redu, Bélgica. Estación ESA.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Maspalomas",
@@ -126,10 +136,11 @@
     "region": "Europa",
     "lat": 27.7628,
     "lon": -15.6333,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Maspalomas, Gran Canaria. Estación INTA/ESA.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Medvezhy Ozera (Bear Lakes)",
@@ -138,10 +149,11 @@
     "region": "Europa/Asia",
     "lat": 55.8394,
     "lon": 37.9369,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Cerca de Moscú, Rusia. Estación de seguimiento Roscosmos.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Ussuriysk",
@@ -150,10 +162,11 @@
     "region": "Asia",
     "lat": 43.7036,
     "lon": 131.7681,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Ussuriysk, Rusia. Estación de seguimiento.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Evpatoria",
@@ -162,10 +175,11 @@
     "region": "Europa/Asia",
     "lat": 45.1906,
     "lon": 33.1806,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "S, X",
     "desc": "Evpatoria, Crimea. Estación de espacio profundo rusa.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Kashgar",
@@ -174,10 +188,11 @@
     "region": "Asia",
     "lat": 39.49,
     "lon": 75.79,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "S, X",
     "desc": "Kashgar, China. Estación CNSA de espacio profundo.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Jiamusi",
@@ -186,10 +201,11 @@
     "region": "Asia",
     "lat": 46.82,
     "lon": 130.37,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "S, X",
     "desc": "Jiamusi, China. Estación CNSA de espacio profundo.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Kashi (Kashgar DSN)",
@@ -198,10 +214,11 @@
     "region": "Asia",
     "lat": 39.5,
     "lon": 75.9,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "S, X",
     "desc": "Kashi, China. Estación CNSA de espacio profundo.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Neuquén (Espacio Lejano)",
@@ -210,10 +227,11 @@
     "region": "Sudamérica",
     "lat": -38.5,
     "lon": -69.5,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "S, X",
     "desc": "Neuquén, Argentina. Estación de espacio profundo china (acuerdo con Argentina).",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Swakopmund",
@@ -222,10 +240,11 @@
     "region": "África",
     "lat": -22.67,
     "lon": 14.53,
-    "type": "antenna",
+    "type": "deep_space",
     "bands": "S, X",
     "desc": "Swakopmund, Namibia. Estación CNSA de espacio profundo.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Svalbard",
@@ -234,10 +253,11 @@
     "region": "Europa",
     "lat": 78.2297,
     "lon": 15.3994,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Svalbard, Noruega. Estación polar KSAT. Muy usada para órbitas polares.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Troll",
@@ -246,10 +266,11 @@
     "region": "Antártida",
     "lat": -72.0114,
     "lon": 2.5353,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Troll, Antártida. Estación polar KSAT.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Inuvik",
@@ -258,10 +279,11 @@
     "region": "Norteamérica",
     "lat": 68.3056,
     "lon": -133.5281,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Inuvik, Canadá. Estación polar KSAT.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Dongara",
@@ -270,10 +292,11 @@
     "region": "Oceanía",
     "lat": -29.0461,
     "lon": 114.9781,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Dongara, Australia. Estación SSC.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "South Point (Hawaii)",
@@ -282,10 +305,11 @@
     "region": "Norteamérica",
     "lat": 19.0139,
     "lon": -155.6644,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "South Point, Hawaii. Estación SSC.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "North Pole (Alaska)",
@@ -294,10 +318,11 @@
     "region": "Norteamérica",
     "lat": 70.4,
     "lon": -157.4,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "North Pole, Alaska. Estación SSC.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Punta Arenas",
@@ -306,10 +331,11 @@
     "region": "Sudamérica",
     "lat": -53.15,
     "lon": -70.92,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Punta Arenas, Chile. Estación KSAT (polar).",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Antofagasta",
@@ -318,10 +344,11 @@
     "region": "Sudamérica",
     "lat": -23.65,
     "lon": -70.4,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Antofagasta, Chile. Estación KSAT.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Peldehue (Colina)",
@@ -330,10 +357,11 @@
     "region": "Sudamérica",
     "lat": -33.1583,
     "lon": -70.6719,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Colina, Chile. Construida por NASA ~1965 (acuerdo con gobierno chileno). Traspasada a la Universidad de Chile (unidad independiente). Luego vendida a Swedish Space Corporation (SSC).",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Santiago (INTA)",
@@ -342,10 +370,11 @@
     "region": "Sudamérica",
     "lat": -33.45,
     "lon": -70.66,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Santiago, Chile. Estación INTA.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Santiago (SSC)",
@@ -354,10 +383,11 @@
     "region": "Sudamérica",
     "lat": -33.45,
     "lon": -70.66,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Santiago, Chile. Estación SSC.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Córdoba",
@@ -366,10 +396,11 @@
     "region": "Sudamérica",
     "lat": -31.5244,
     "lon": -64.4628,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Córdoba, Argentina. Estación CONAE.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Malargüe (CONAE)",
@@ -378,10 +409,11 @@
     "region": "Sudamérica",
     "lat": -35.4861,
     "lon": -69.5672,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Malargüe, Argentina. Centro Espacial Teófilo Tabanera (CETT). Distinta de la estación ESA de Malargüe.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Falda del Carmen",
@@ -390,10 +422,11 @@
     "region": "Sudamérica",
     "lat": -31.4833,
     "lon": -64.4833,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Córdoba, Argentina. Estación CONAE (misma zona que Córdoba).",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Ushuaia (propuesta)",
@@ -402,10 +435,11 @@
     "region": "Sudamérica",
     "lat": -54.8,
     "lon": -68.3,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Ushuaia, Argentina. Estación de rastreo en el extremo sur (posible, por verificar).",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Punta Arenas (planificada)",
@@ -414,10 +448,11 @@
     "region": "Sudamérica",
     "lat": -53.16,
     "lon": -70.92,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Punta Arenas, Chile. Estación de rastreo planificada por Chile en futuro cercano.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Singapore",
@@ -426,10 +461,11 @@
     "region": "Asia",
     "lat": 1.3521,
     "lon": 103.8198,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Singapur. Estación de seguimiento.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Dubai",
@@ -438,10 +474,11 @@
     "region": "Asia",
     "lat": 25.2,
     "lon": 55.27,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Dubai, EAU. Estación KSAT.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Centro Espacial Nacional (FACH)",
@@ -450,10 +487,11 @@
     "region": "Sudamérica",
     "lat": -33.4,
     "lon": -70.6,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "facility_type": "control",
-    "desc": "Santiago, Chile. Centro de control satelital de la Fuerza Aérea de Chile (FACH). NO es estación de rastreo. Originalmente en Base del Bosque, ahora en el Centro Espacial Nacional."
+    "desc": "Santiago, Chile. Centro de control satelital de la Fuerza Aérea de Chile (FACH). NO es estación de rastreo. Originalmente en Base del Bosque, ahora en el Centro Espacial Nacional.",
+    "instrument": "antenna"
   },
   {
     "name": "Base del Bosque (FACH, histórico)",
@@ -462,10 +500,11 @@
     "region": "Sudamérica",
     "lat": -33.1,
     "lon": -70.8,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "facility_type": "control",
-    "desc": "Base Aérea del Bosque, Santiago. Ubicación histórica del centro de control satelital FACH."
+    "desc": "Base Aérea del Bosque, Santiago. Ubicación histórica del centro de control satelital FACH.",
+    "instrument": "antenna"
   },
   {
     "name": "CETT (Teófilo Tabanera)",
@@ -474,10 +513,11 @@
     "region": "Sudamérica",
     "lat": -31.5244,
     "lon": -64.4628,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "facility_type": "both",
-    "desc": "Córdoba, Argentina. Centro Espacial Teófilo Tabanera: rastreo Y control de satélites argentinos (SAOCOM, ARSAT)."
+    "desc": "Córdoba, Argentina. Centro Espacial Teófilo Tabanera: rastreo Y control de satélites argentinos (SAOCOM, ARSAT).",
+    "instrument": "antenna"
   },
   {
     "name": "Centro de Control Pucusana",
@@ -486,10 +526,11 @@
     "region": "Sudamérica",
     "lat": -12.48,
     "lon": -76.8,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "facility_type": "control",
-    "desc": "Pucusana, Lima, Perú. Centro de control satelital de la Comisión Nacional de Investigación y Desarrollo Aeroespacial (CONIDA)."
+    "desc": "Pucusana, Lima, Perú. Centro de control satelital de la Comisión Nacional de Investigación y Desarrollo Aeroespacial (CONIDA).",
+    "instrument": "antenna"
   },
   {
     "name": "Centro Espacial de Barreira do Inferno",
@@ -498,10 +539,11 @@
     "region": "Sudamérica",
     "lat": -5.92,
     "lon": -35.16,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "desc": "Natal, Brasil. Centro de lanzamiento y control de la Agencia Espacial Brasileña.",
-    "facility_type": "tracking"
+    "facility_type": "tracking",
+    "instrument": "antenna"
   },
   {
     "name": "Centro de Control Satelital (INTA)",
@@ -510,10 +552,11 @@
     "region": "Europa",
     "lat": 40.5,
     "lon": -3.5,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "S, X",
     "facility_type": "control",
-    "desc": "Torrejón, España. Centro de control de satélites INTA."
+    "desc": "Torrejón, España. Centro de control de satélites INTA.",
+    "instrument": "antenna"
   },
   {
     "name": "SatNOGS (red global)",
@@ -522,10 +565,11 @@
     "region": "Global",
     "lat": 0,
     "lon": 0,
-    "type": "antenna",
+    "type": "leo_meo",
     "bands": "VHF, UHF",
     "facility_type": "tracking",
-    "desc": "Red abierta de estaciones de radioaficionados. Miles de estaciones en todo el mundo. Datos publicos: https://network.satnogs.org/"
+    "desc": "Red abierta de estaciones de radioaficionados. Miles de estaciones en todo el mundo. Datos publicos: https://network.satnogs.org/",
+    "instrument": "antenna"
   },
   {
     "name": "SeeSat-L (observadores)",
@@ -534,9 +578,10 @@
     "region": "Global",
     "lat": 0,
     "lon": 0,
-    "type": "optical",
+    "type": "leo_meo",
     "bands": "Visual",
     "facility_type": "tracking",
-    "desc": "Red de observadores visuales de satelites. Reportes de pasos, flash, posicion. Lista de correo desde los 90s."
+    "desc": "Red de observadores visuales de satelites. Reportes de pasos, flash, posicion. Lista de correo desde los 90s.",
+    "instrument": "optical"
   }
 ]
