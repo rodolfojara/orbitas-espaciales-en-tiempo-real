@@ -31,6 +31,12 @@
     <option value="deep_space">Espacio profundo</option>
     <option value="leo_meo">LEO/MEO</option>
   </select></label>
+  <label>Función: <select id="facFilter" onchange="applyFilter()" style="width:140px;">
+    <option value="all">Todas</option>
+    <option value="tracking">Rastreo</option>
+    <option value="control">Control</option>
+    <option value="both">Ambas</option>
+  </select></label>
   <span id="count" style="font-size:12px;color:#aaa;"></span>
 </div>
 <div id="map"></div>
@@ -88,6 +94,7 @@
     const opFilter = document.getElementById('filter').value;
     const regionFilter = document.getElementById('regionFilter').value;
     const typeFilter = document.getElementById('typeFilter').value;
+    const facFilter = document.getElementById('facFilter').value;
     // remove old markers
     markers.forEach(m => map.removeLayer(m));
     markers = [];
@@ -95,6 +102,7 @@
       if (opFilter !== 'all' && s.operator !== opFilter) return false;
       if (regionFilter !== 'all' && s.region !== regionFilter) return false;
       if (typeFilter !== 'all' && s.type !== typeFilter) return false;
+      if (facFilter !== 'all' && s.facility_type !== facFilter) return false;
       return true;
     });
     filtered.forEach(s => {
@@ -106,6 +114,7 @@
         'Operador: ' + s.operator + '<br/>' +
         'País: ' + s.country + ' (' + s.region + ')<br/>' +
         'Tipo: ' + (s.type === 'deep_space' ? 'Espacio profundo' : 'LEO/MEO') + '<br/>' +
+        'Función: ' + (s.facility_type === 'control' ? 'Control' : s.facility_type === 'both' ? 'Rastreo + Control' : 'Rastreo') + '<br/>' +
         'Bandas: ' + (s.bands || '-') + '<br/>' +
         s.desc);
       m.on('click', () => {
