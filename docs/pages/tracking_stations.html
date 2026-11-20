@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<title>Estaciones de rastreo de satélites</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  body { margin: 0; font-family: sans-serif; background: #1a1a2e; color: #eee; }
+  #map { height: 85vh; width: 100%; }
+  .panel { padding: 10px 16px; background: #16213e; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .panel label { font-size: 13px; }
+  .panel select { padding: 6px 8px; border-radius: 4px; border: 1px solid #444; background: #0f3460; color: #eee; }
+  .info { position: absolute; bottom: 20px; right: 20px; z-index: 1000;
+          background: rgba(0,0,0,0.8); color: white; padding: 10px 14px; border-radius: 8px;
+          font-size: 12px; max-width: 320px; }
+  .legend { position: absolute; top: 80px; left: 10px; z-index: 1000;
+            background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; border-radius: 8px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="panel">
+  <label>Operador: <select id="filter" onchange="applyFilter()" style="width:180px;">
+    <option value="all">Todos</option>
+  </select></label>
+  <label>Región: <select id="regionFilter" onchange="applyFilter()" style="width:160px;">
+    <option value="all">Todas</option>
+  </select></label>
+  <label>Tipo: <select id="typeFilter" onchange="applyFilter()" style="width:140px;">
+    <option value="all">Todos</option>
+    <option value="deep_space">Espacio profundo</option>
+    <option value="leo_meo">LEO/MEO</option>
+  </select></label>
+  <label>Función: <select id="facFilter" onchange="applyFilter()" style="width:140px;">
+    <option value="all">Todas</option>
+    <option value="tracking">Rastreo</option>
+    <option value="control">Control</option>
+    <option value="both">Ambas</option>
+  </select></label>
+  <span id="count" style="font-size:12px;color:#aaa;"></span>
+</div>
+<div id="map"></div>
+<div class="legend" id="legend"></div>
+<div class="info" id="info">Haz clic en una estación para ver detalles.</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([20, 0], 2);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 8, noWrap: true, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
+  }).addTo(map);
+
+  let allStations = [];
+  let markers = [];
+
+  const opColors = {
+    'NASA DSN': '#e94560',
+    'ESA ESTRACK': '#4fc3f7',
+    'ESA ESTRACK / SSC': '#4fc3f7',
+    'Roscosmos': '#ff9800',
+    'CNSA': '#ffeb3b',
+    'SSC': '#ab47bc',
+    'SSC (ex-Peldehue)': '#ab47bc',
+    'KSAT': '#26a69a',
+    'CONAE': '#66bb6a',
+    'SANSA': '#8d6e63',
+    'INTA': '#78909c',
+    'INTA / ESA': '#78909c',
+  };
+
+  async function loadStations() {
+    try {
+      const res = await fetch('/api/stations');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      allStations = await res.json();
+      console.log('Loaded', allStations.length, 'stations');
+    } catch (e) {
+      console.error('Error loading stations:', e);
+      document.getElementById('count').textContent = 'Error cargando estaciones: ' + e.message;
+      return;
+    }
+    // populate operator filter
+    const ops = [...new Set(allStations.map(s => s.operator))].sort();
+    const sel = document.getElementById('filter');
+    ops.forEach(op => {
+      const opt = document.createElement('option');
+      opt.value = op; opt.textContent = op;
+      sel.appendChild(opt);
+    });
+    // populate region filter
+    const regions = [...new Set(allStations.map(s => s.region))].sort();
+    const rsel = document.getElementById('regionFilter');
+    regions.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r; opt.textContent = r;
+      rsel.appendChild(opt);
+    });
+    applyFilter();
+  }
+
+  function applyFilter() {
+    const opFilter = document.getElementById('filter').value;
+    const regionFilter = document.getElementById('regionFilter').value;
+    const typeFilter = document.getElementById('typeFilter').value;
+    const facFilter = document.getElementById('facFilter').value;
+    // remove old markers
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+    const filtered = allStations.filter(s => {
+      if (opFilter !== 'all' && !s.operator.includes(opFilter)) return false;
+      if (regionFilter !== 'all' && s.region !== regionFilter) return false;
+      if (typeFilter !== 'all' && s.type !== typeFilter) return false;
+      if (facFilter !== 'all' && s.facility_type !== facFilter) return false;
+      return true;
+    });
+    filtered.forEach(s => {
+      const color = opColors[s.operator] || '#ffffff';
+      const m = L.circleMarker([s.lat, s.lon], {
+        radius: 7, color: color, fillColor: color, fillOpacity: 0.85, weight: 2
+      }).addTo(map);
+      m.bindPopup('<b>' + s.name + '</b><br/>' +
+        'Operador: ' + s.operator + '<br/>' +
+        'País: ' + s.country + ' (' + s.region + ')<br/>' +
+        'Tipo: ' + (s.type === 'deep_space' ? 'Espacio profundo' : 'LEO/MEO') + '<br/>' +
+        'Instrumento: ' + (s.instrument || '-') + '<br/>' +
+        'Función: ' + (s.facility_type === 'control' ? 'Control' : s.facility_type === 'both' ? 'Rastreo + Control' : 'Rastreo') + '<br/>' +
+        'Bandas: ' + (s.bands || '-') + '<br/>' +
+        s.desc);
+      m.on('click', () => {
+        document.getElementById('info').innerHTML = '<b>' + s.name + '</b><br/>' +
+          'Operador: ' + s.operator + '<br/>País: ' + s.country + ' (' + s.region + ')<br/>' +
+          'Tipo: ' + (s.type === 'deep_space' ? 'Espacio profundo' : 'LEO/MEO') + '<br/>' +
+          'Instrumento: ' + (s.instrument || '-') + '<br/>' +
+          'Función: ' + (s.facility_type === 'control' ? 'Control' : s.facility_type === 'both' ? 'Rastreo + Control' : 'Rastreo') + '<br/>' +
+          'Bandas: ' + (s.bands || '-') + '<br/>' +
+          s.desc;
+      });
+      markers.push(m);
+    });
+    document.getElementById('count').textContent = filtered.length + ' estaciones';
+    // legend
+    const ops = [...new Set(filtered.map(s => s.operator))];
+    document.getElementById('legend').innerHTML = ops.map(op =>
+      '<span style="color:' + (opColors[op]||'#fff') + '">●</span> ' + op
+    ).join('<br/>');
+  }
+
+  loadStations();
+</script>
+</body>
+</html>

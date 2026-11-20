@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<title>Mapa marciano - Sistema solar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<style>
+  body { margin: 0; font-family: sans-serif; background: #0b1020; color: #eee; }
+  .panel { padding: 10px 16px; background: #16213e; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .panel label { font-size: 13px; }
+  .panel input, .panel select { padding: 6px 8px; border-radius: 4px; border: 1px solid #444; background: #0f3460; color: #eee; }
+  .panel button { padding: 6px 14px; border-radius: 4px; border: none; background: #e94560; color: white; cursor: pointer; font-weight: bold; }
+  canvas { display: block; margin: 0 auto; background: #0b1020; }
+  .info { padding: 8px 16px; background: #0f3460; font-size: 12px; min-height: 20px; }
+</style>
+</head>
+<body>
+<div class="panel">
+  <label>Nave (Horizons ID): <select id="sc" style="width:180px;padding:6px;border-radius:4px;border:1px solid #444;background:#0f3460;color:#eee;">
+    <option value="-74">MRO</option>
+    <option value="-168">Perseverance</option>
+    <option value="-202">MAVEN</option>
+    <option value="-53">Mars Odyssey</option>
+    <option value="-41">Mars Express</option>
+    <option value="-62">EMM (Hope)</option>
+    <option value="-189">InSight</option>
+    <option value="-76">Curiosity (MSL)</option>
+    <option value="-84">Phoenix</option>
+    <option value="-143">ExoMars TGO</option>
+    <option value="-253">Opportunity</option>
+    <option value="-254">Spirit</option>
+    <option value="-530">Mars Pathfinder</option>
+  </select></label>
+  <label>Inicio: <input id="start" type="date" value="2026-01-01" style="width:140px"/></label>
+  <label>Fin: <input id="stop" type="date" value="2026-01-31" style="width:140px"/></label>
+  <button onclick="runQuery()">Consultar y dibujar</button>
+  <span id="status" style="font-size:12px;color:#aaa;"></span>
+</div>
+<canvas id="canvas" width="800" height="800"></canvas>
+<div class="info" id="info">Selecciona una nave y pulsa "Consultar y dibujar".</div>
+
+<script>
+  // Mars web map uses the lunar API but with heliocentric data
+  // We'll fetch from a Mars-specific endpoint if available, else use a proxy
+  // For now, use the interplanetary scale (AU)
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const scale = canvas.width / 4.5; // 4.5 AU range
+
+  function drawScene(earth, mars, scTraj, scName) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Sun
+    ctx.beginPath();
+    ctx.arc(cx, cy, 10, 0, 2*Math.PI);
+    ctx.fillStyle = '#ffd24d';
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Sol', cx+12, cy+4);
+    // Orbits
+    for (const [a, color, label] of [[1.0,'rgba(77,166,255,0.3)','Tierra'],[1.5237,'rgba(255,100,50,0.3)','Marte']]) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, a*scale, 0, 2*Math.PI);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    // Earth
+    if (earth && earth.length) {
+      ctx.beginPath();
+      ctx.moveTo(cx + earth[0][0]*scale, cy - earth[0][1]*scale);
+      for (let i = 1; i < earth.length; i++) ctx.lineTo(cx + earth[i][0]*scale, cy - earth[i][1]*scale);
+      ctx.strokeStyle = 'rgba(77,166,255,0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      const e = earth[earth.length-1];
+      ctx.beginPath();
+      ctx.arc(cx + e[0]*scale, cy - e[1]*scale, 5, 0, 2*Math.PI);
+      ctx.fillStyle = '#4da6ff';
+      ctx.fill();
+      ctx.fillText('Tierra', cx + e[0]*scale + 8, cy - e[1]*scale + 4);
+    }
+    // Mars
+    if (mars && mars.length) {
+      ctx.beginPath();
+      ctx.moveTo(cx + mars[0][0]*scale, cy - mars[0][1]*scale);
+      for (let i = 1; i < mars.length; i++) ctx.lineTo(cx + mars[i][0]*scale, cy - mars[i][1]*scale);
+      ctx.strokeStyle = 'rgba(255,100,50,0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      const m = mars[mars.length-1];
+      ctx.beginPath();
+      ctx.arc(cx + m[0]*scale, cy - m[1]*scale, 5, 0, 2*Math.PI);
+      ctx.fillStyle = '#ff6432';
+      ctx.fill();
+      ctx.fillText('Marte', cx + m[0]*scale + 8, cy - m[1]*scale + 4);
+    }
+    // Spacecraft
+    if (scTraj && scTraj.length) {
+      ctx.beginPath();
+      ctx.moveTo(cx + scTraj[0][0]*scale, cy - scTraj[0][1]*scale);
+      for (let i = 1; i < scTraj.length; i++) ctx.lineTo(cx + scTraj[i][0]*scale, cy - scTraj[i][1]*scale);
+      ctx.strokeStyle = '#ff5555';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      const s0 = scTraj[0], s1 = scTraj[scTraj.length-1];
+      ctx.beginPath();
+      ctx.arc(cx + s0[0]*scale, cy - s0[1]*scale, 5, 0, 2*Math.PI);
+      ctx.fillStyle = '#00ff88';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx + s1[0]*scale, cy - s1[1]*scale, 6, 0, 2*Math.PI);
+      ctx.fillStyle = '#ff5555';
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.fillText(scName + ' (inicio)', cx + s0[0]*scale + 8, cy - s0[1]*scale + 4);
+      ctx.fillText(scName + ' (actual)', cx + s1[0]*scale + 8, cy - s1[1]*scale + 4);
+    }
+  }
+
+  async function runQuery() {
+    const sc = document.getElementById('sc').value;
+    const start = document.getElementById('start').value;
+    const stop = document.getElementById('stop').value;
+    const status = document.getElementById('status');
+    const info = document.getElementById('info');
+    status.textContent = 'Consultando Horizons...';
+    try {
+      // Fetch spacecraft
+      const scRes = await fetch('/api/horizons?target=' + encodeURIComponent(sc) + '&start=' + start + '&stop=' + stop + '&center=@sun');
+      if (!scRes.ok) { const e = await scRes.json(); throw new Error(e.error || 'HTTP ' + scRes.status); }
+      const scData = await scRes.json();
+      // Fetch Earth
+      const eRes = await fetch('/api/horizons?target=399&start=' + start + '&stop=' + stop + '&center=@sun');
+      const eData = await eRes.json();
+      // Fetch Mars
+      const mRes = await fetch('/api/horizons?target=499&start=' + start + '&stop=' + stop + '&center=@sun');
+      const mData = await mRes.json();
+
+      const scName = document.getElementById('sc').options[document.getElementById('sc').selectedIndex].text;
+      drawScene(eData.traj, mData.traj, scData.traj, scName);
+      info.textContent = 'Nave: ' + scName + ' | Puntos: ' + scData.traj.length;
+      status.textContent = 'OK';
+    } catch (e) {
+      status.textContent = 'Error';
+      info.textContent = 'Error: ' + e.message;
+    }
+  }
+
+  drawScene(null, null, null, '');
+</script>
+</body>
+</html

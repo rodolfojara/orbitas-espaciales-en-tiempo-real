@@ -1,5 +1,10 @@
 # Órbitas Espaciales en Tiempo Real
 
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](tests/test_basic.py)
+[![GitHub Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://rodolfojara.github.io/orbitas-espaciales-en-tiempo-real/)
+
 Estimación de la posición de una nave **en todo momento**, incluso cuando el
 webcast deja de mostrar datos.
 

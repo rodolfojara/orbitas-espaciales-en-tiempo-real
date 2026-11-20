@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<title>Consulta orbital - Proyección a la Tierra</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  body { margin: 0; font-family: sans-serif; background: #1a1a2e; color: #eee; }
+  #map { height: 68vh; width: 100%; }
+  .panel { padding: 12px 16px; background: #16213e; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .panel label { font-size: 13px; }
+  .panel input { padding: 6px 8px; border-radius: 4px; border: 1px solid #444; background: #0f3460; color: #eee; }
+  .panel button { padding: 6px 14px; border-radius: 4px; border: none; background: #e94560; color: white; cursor: pointer; font-weight: bold; }
+  .panel button:hover { background: #ff6b6b; }
+  .info { padding: 8px 16px; background: #0f3460; font-size: 12px; min-height: 20px; }
+  .legend { position: absolute; bottom: 90px; left: 10px; z-index: 1000;
+            background: rgba(0,0,0,0.7); color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="panel">
+  <label>Grupo: <select id="group" onchange="searchGroup()" style="width:120px;padding:6px;border-radius:4px;border:1px solid #444;background:#0f3460;color:#eee;">
+    <option value="">-- seleccionar --</option>
+  </select></label>
+  <label>Buscar nombre: <input id="search" type="text" placeholder="ISS, SSOT, SUCHAI..." style="width:140px"/></label>
+  <button onclick="searchSat()">Buscar</button>
+  <label>NORAD ID: <input id="norad" type="number" value="25544" style="width:80px"/></label>
+  <label>Órbitas: <input id="norbits" type="number" value="3" min="1" max="20" style="width:60px"/></label>
+  <label>Paso (min): <input id="step" type="number" value="2" min="0.5" max="10" step="0.5" style="width:60px"/></label>
+  <label>Inicio (UTC): <input id="start" type="datetime-local" style="width:200px"/></label>
+  <button onclick="runQuery()">Consultar y proyectar</button>
+  <span id="status" style="font-size:12px;color:#aaa;"></span>
+</div>
+<div id="searchResults" style="padding:6px 16px; background:#0f3460; font-size:12px; display:none;"></div>
+<div id="map"></div>
+<div class="info" id="info">Ingrese parámetros y pulse "Consultar y proyectar". (Requiere serve.py)</div>
+<div class="legend" id="legend" style="display:none;">
+  <span style="color:#d62728">—</span> Trayectoria<br/>
+  <span style="color:#ffd24d">●</span> Inicio<br/>
+  <span style="color:#ff5555">●</span> Fin
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map', {
+    maxBounds: [[-90, -180], [90, 180]],
+    maxBoundsViscosity: 1.0,
+    worldCopyJump: false
+  }).setView([0, 0], 2);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 8, noWrap: true, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
+  }).addTo(map);
+
+  let trackLayer = null, daynightLayer = null, markerStart = null, markerEnd = null;
+
+  function makeDayNightImage(subsolarLon, subsolarLat) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 720; canvas.height = 360;
+    const ctx = canvas.getContext('2d');
+    const img = ctx.createImageData(720, 360);
+    for (let y = 0; y < 360; y++) {
+      for (let x = 0; x < 720; x++) {
+        const lon = (x / 720) * 360 - 180;
+        const lat = 90 - (y / 360) * 180;
+        const cosz = Math.sin(subsolarLat*Math.PI/180)*Math.sin(lat*Math.PI/180) +
+                     Math.cos(subsolarLat*Math.PI/180)*Math.cos(lat*Math.PI/180)*Math.cos((lon-subsolarLon)*Math.PI/180);
+        const zenith = Math.acos(Math.max(-1, Math.min(1, cosz)));
+        const night = zenith > Math.PI/2;
+        const darkness = night ? Math.min(1, (zenith - Math.PI/2) / (Math.PI/2)) : 0;
+        const gray = 0.60 - 0.45 * darkness;
+        const alpha = night ? 0.40 + 0.45 * darkness : 0;
+        const i = (y * 720 + x) * 4;
+        img.data[i] = gray * 255;
+        img.data[i+1] = gray * 255;
+        img.data[i+2] = (gray + 0.02) * 255;
+        img.data[i+3] = alpha * 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    return canvas.toDataURL();
+  }
+
+  async function loadGroups() {
+    try {
+      const res = await fetch('/api/groups');
+      const data = await res.json();
+      const sel = document.getElementById('group');
+      data.groups.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g; opt.textContent = g;
+        sel.appendChild(opt);
+      });
+    } catch (e) {}
+  }
+  async function searchGroup() {
+    const g = document.getElementById('group').value;
+    if (!g) return;
+    document.getElementById('search').value = g;
+    await searchSat();
+  }
+  async function searchSat() {
+    const name = document.getElementById('search').value.trim();
+    if (!name) return;
+    const resDiv = document.getElementById('searchResults');
+    resDiv.style.display = 'block';
+    resDiv.textContent = 'Buscando...';
+    try {
+      const res = await fetch('/api/search?name=' + encodeURIComponent(name));
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (!data.results || !data.results.length) {
+        resDiv.textContent = 'Sin resultados para "' + name + '".';
+        return;
+      }
+      resDiv.innerHTML = 'Resultados para "' + data.query + '":<br/>' +
+        data.results.map(r =>
+          '<a href="#" onclick="selectSat(' + r.norad + ');return false;" style="color:#4fc3f7;margin-right:12px;">' +
+          r.name + ' (NORAD ' + r.norad + ', inc ' + (r.inc||'?').toFixed(1) + '°)</a>'
+        ).join(' ');
+    } catch (e) {
+      resDiv.textContent = 'Error: ' + e.message;
+    }
+  }
+  function selectSat(norad) {
+    document.getElementById('norad').value = norad;
+    document.getElementById('searchResults').style.display = 'none';
+  }
+
+  async function runQuery() {
+    const norad = document.getElementById('norad').value.trim();
+    const norbits = document.getElementById('norbits').value;
+    const step = document.getElementById('step').value;
+    const start = document.getElementById('start').value;
+    const status = document.getElementById('status');
+    const info = document.getElementById('info');
+
+    status.textContent = 'Consultando...';
+    let url = '/api/query?norad=' + norad + '&norbits=' + norbits + '&step=' + step;
+    if (start) url += '&start=' + encodeURIComponent(start);
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'HTTP ' + res.status);
+      }
+      const data = await res.json();
+
+      if (trackLayer) map.removeLayer(trackLayer);
+      if (daynightLayer) map.removeLayer(daynightLayer);
+      if (markerStart) map.removeLayer(markerStart);
+      if (markerEnd) map.removeLayer(markerEnd);
+
+      // Day/night
+      const dnUrl = makeDayNightImage(data.subsolar_lon, data.subsolar_lat);
+      daynightLayer = L.imageOverlay(dnUrl, [[-90,-180],[90,180]], {opacity:0.85, interactive:false}).addTo(map);
+
+      // Track
+      const pts = data.points.map(p => [p.lat, p.lon]);
+      const segs = [];
+      let cur = [pts[0]];
+      for (let i = 1; i < pts.length; i++) {
+        if (Math.abs(pts[i][1] - pts[i-1][1]) > 180) { segs.push(cur); cur = [pts[i]]; }
+        else cur.push(pts[i]);
+      }
+      segs.push(cur);
+
+      trackLayer = L.featureGroup().addTo(map);
+      segs.forEach(seg => {
+        if (seg.length < 2) return;
+        L.polyline(seg, {color:'#d62728', weight:2, opacity:0.85}).addTo(trackLayer);
+      });
+      markerStart = L.circleMarker(pts[0], {radius:7, color:'green', fillColor:'green', fillOpacity:0.9}).addTo(map).bindPopup('Inicio');
+      markerEnd = L.circleMarker(pts[pts.length-1], {radius:7, color:'red', fillColor:'red', fillOpacity:0.9}).addTo(map).bindPopup('Fin');
+
+      map.fitBounds(trackLayer.getBounds());
+
+      info.textContent = 'Satélite: ' + data.sat + ' (NORAD ' + data.norad + ') | Órbitas: ' + data.norbits +
+        ' | Período: ' + data.period_min.toFixed(1) + ' min | Puntos: ' + pts.length +
+        ' | Inicio: ' + data.start;
+      document.getElementById('legend').style.display = 'block';
+      status.textContent = 'OK';
+    } catch (e) {
+      status.textContent = 'Error';
+      info.textContent = 'Error: ' + e.message;
+    }
+  }
+
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('start').value = now.toISOString().slice(0,16);
+  loadGroups();
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<title>Mapa cislunar - Tierra-Luna</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<style>
+  body { margin: 0; font-family: sans-serif; background: #0b1020; color: #eee; }
+  .panel { padding: 10px 16px; background: #16213e; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .panel label { font-size: 13px; }
+  .panel input, .panel select { padding: 6px 8px; border-radius: 4px; border: 1px solid #444; background: #0f3460; color: #eee; }
+  .panel button { padding: 6px 14px; border-radius: 4px; border: none; background: #e94560; color: white; cursor: pointer; font-weight: bold; }
+  canvas { display: block; margin: 0 auto; background: #0b1020; }
+  .info { padding: 8px 16px; background: #0f3460; font-size: 12px; min-height: 20px; }
+</style>
+</head>
+<body>
+<div class="panel">
+  <label>Nave (Horizons ID): <select id="sc" style="width:160px;padding:6px;border-radius:4px;border:1px solid #444;background:#0f3460;color:#eee;">
+    <option value="-85">LRO</option>
+    <option value="-155">Danuri</option>
+    <option value="-1024">Artemis II</option>
+    <option value="-1176">CAPSTONE</option>
+    <option value="-240">SLIM</option>
+    <option value="-86">Chandrayaan-1</option>
+    <option value="-152">Chandrayaan-2</option>
+    <option value="-158">Chandrayaan-3</option>
+    <option value="-164">Lunar Flashlight</option>
+    <option value="-242">Lunar Trailblazer</option>
+    <option value="-1023">Artemis 1</option>
+    <option value="-18">LCROSS</option>
+  </select></label>
+  <label>Inicio: <input id="start" type="date" value="2026-11-15" style="width:140px"/></label>
+  <label>Fin: <input id="stop" type="date" value="2026-11-18" style="width:140px"/></label>
+  <button onclick="runQuery()">Consultar y dibujar</button>
+  <span id="status" style="font-size:12px;color:#aaa;"></span>
+</div>
+<canvas id="canvas" width="800" height="800"></canvas>
+<div class="info" id="info">Selecciona una nave y pulsa "Consultar y dibujar".</div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const scale = canvas.width / (900000); // 900000 km range
+
+  function drawScene(moon, scTraj, scName) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Earth
+    ctx.beginPath();
+    ctx.arc(cx, cy, 8, 0, 2*Math.PI);
+    ctx.fillStyle = '#4da6ff';
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Tierra', cx+12, cy+4);
+    // Moon orbit
+    ctx.beginPath();
+    ctx.arc(cx, cy, 384400*scale, 0, 2*Math.PI);
+    ctx.strokeStyle = 'rgba(170,170,170,0.3)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // Moon trajectory
+    if (moon && moon.length) {
+      ctx.beginPath();
+      ctx.moveTo(cx + moon[0][0]*scale, cy - moon[0][1]*scale);
+      for (let i = 1; i < moon.length; i++) ctx.lineTo(cx + moon[i][0]*scale, cy - moon[i][1]*scale);
+      ctx.strokeStyle = 'rgba(200,200,200,0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      const last = moon[moon.length-1];
+      ctx.beginPath();
+      ctx.arc(cx + last[0]*scale, cy - last[1]*scale, 5, 0, 2*Math.PI);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.fillText('Luna', cx + last[0]*scale + 8, cy - last[1]*scale + 4);
+    }
+    // Spacecraft trajectory
+    if (scTraj && scTraj.length) {
+      ctx.beginPath();
+      ctx.moveTo(cx + scTraj[0][0]*scale, cy - scTraj[0][1]*scale);
+      for (let i = 1; i < scTraj.length; i++) ctx.lineTo(cx + scTraj[i][0]*scale, cy - scTraj[i][1]*scale);
+      ctx.strokeStyle = '#ff5555';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      const s0 = scTraj[0], s1 = scTraj[scTraj.length-1];
+      ctx.beginPath();
+      ctx.arc(cx + s0[0]*scale, cy - s0[1]*scale, 5, 0, 2*Math.PI);
+      ctx.fillStyle = '#00ff88';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx + s1[0]*scale, cy - s1[1]*scale, 6, 0, 2*Math.PI);
+      ctx.fillStyle = '#ff5555';
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.fillText(scName + ' (inicio)', cx + s0[0]*scale + 8, cy - s0[1]*scale + 4);
+      ctx.fillText(scName + ' (actual)', cx + s1[0]*scale + 8, cy - s1[1]*scale + 4);
+    }
+  }
+
+  async function runQuery() {
+    const sc = document.getElementById('sc').value;
+    const start = document.getElementById('start').value;
+    const stop = document.getElementById('stop').value;
+    const status = document.getElementById('status');
+    const info = document.getElementById('info');
+    status.textContent = 'Consultando Horizons...';
+    try {
+      const url = '/api/lunar?sc=' + encodeURIComponent(sc) + '&start=' + start + '&stop=' + stop;
+      const res = await fetch(url);
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'HTTP ' + res.status); }
+      const data = await res.json();
+      const scName = document.getElementById('sc').options[document.getElementById('sc').selectedIndex].text;
+      drawScene(data.moon, data.sc_traj, scName);
+      info.textContent = 'Nave: ' + scName + ' | Puntos: ' + data.sc_traj.length + ' | Luna: ' + data.moon.length + ' puntos';
+      status.textContent = 'OK';
+    } catch (e) {
+      status.textContent = 'Error';
+      info.textContent = 'Error: ' + e.message;
+    }
+  }
+
+  drawScene(null, null, '');
+</script>
+</body>
+</html>

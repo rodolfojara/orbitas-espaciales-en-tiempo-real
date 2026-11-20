@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<title>Órbitas Espaciales en Tiempo Real</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<style>
+  body { margin: 0; font-family: sans-serif; background: #0b1020; color: #eee; }
+  .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+  h1 { color: #4da6ff; }
+  a { color: #4fc3f7; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .card { background: #16213e; padding: 16px; border-radius: 8px; margin: 12px 0; }
+  .card h3 { margin-top: 0; color: #e94560; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Órbitas Espaciales en Tiempo Real</h1>
+  <p>Estimación de la posición de una nave en todo momento, incluso cuando el webcast deja de mostrar datos. Usa un filtro de Kalman extendido (EKF) que propaga el estado con un modelo físico y lo corrige con mediciones.</p>
+  <p><a href="https://github.com/rodolfojara/orbitas-espaciales-en-tiempo-real">GitHub Repository</a></p>
+
+  <h2>Mapas interactivos</h2>
+  <div class="card">
+    <h3><a href="pages/query.html">Consulta orbital</a></h3>
+    <p>Ingresa un NORAD ID y genera la trayectoria proyectada sobre la Tierra.</p>
+  </div>
+  <div class="card">
+    <h3><a href="pages/tracking_stations.html">Estaciones de rastreo</a></h3>
+    <p>Mapa mundial de estaciones de rastreo de satélites (NASA DSN, ESA ESTRACK, etc.).</p>
+  </div>
+  <div class="card">
+    <h3><a href="pages/lunar_map.html">Mapa cislunar</a></h3>
+    <p>Trayectorias Tierra-Luna en coordenadas geocéntricas.</p>
+  </div>
+  <div class="card">
+    <h3><a href="pages/mars_map.html">Mapa marciano</a></h3>
+    <p>Trayectorias heliocéntricas Tierra-Marte.</p>
+  </div>
+  <div class="card">
+    <h3><a href="pages/live_track.html">Seguimiento en vivo</a></h3>
+    <p>Posición en tiempo real con TLE + EKF 3D.</p>
+  </div>
+</div>
+</body>
+</html>
