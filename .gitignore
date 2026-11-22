@@ -5,3 +5,4 @@ __pycache__/
 build/
 dist/
 *.mp4
+search_cache.json
