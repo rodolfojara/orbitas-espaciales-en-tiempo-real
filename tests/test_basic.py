@@ -55,6 +55,66 @@ def test_sources_registry_is_valid():
     assert "# Fuentes de datos" in sources.to_markdown(data)
 
 
+def test_timeutils_roundtrip():
+    from orbitas_rt.timeutils import utc_to_jd, jd_to_utc, gmst
+    from datetime import datetime, timezone
+    dt = datetime(2026, 6, 15, 12, 0, 0, tzinfo=timezone.utc)
+    jd = utc_to_jd(dt)
+    dt2 = jd_to_utc(jd)
+    assert abs((dt2 - dt).total_seconds()) < 2
+    assert 0 <= gmst(jd) < 2 * 3.1416
+
+
+def test_frames_roundtrip():
+    from orbitas_rt.frames import eci_to_geodetic, geodetic_to_ecef, ecef_to_geodetic
+    from datetime import datetime, timezone
+    import numpy as np
+    lat, lon, alt = 40.0, -3.0, 500000.0
+    r = geodetic_to_ecef(lat, lon, alt)
+    lat2, lon2, alt2 = ecef_to_geodetic(r)
+    assert abs(lat2 - lat) < 1e-6
+    assert abs(lon2 - lon) < 1e-6
+    assert abs(alt2 - alt) < 1e-3
+
+
+def test_passes_visibility():
+    from orbitas_rt.passes import is_visible, footprint_radius
+    from datetime import datetime, timezone
+    import numpy as np
+    # satélite directamente sobre la estación
+    def sat_func(t):
+        return np.array([0.0, 0.0, 7000000.0])  # 629 km alt, sobre el polo norte
+    vis, el, az, rng = is_visible(sat_func, 90.0, 0.0, 0.0, datetime(2026, 1, 1, tzinfo=timezone.utc), min_el=0.0)
+    assert vis is True
+    assert footprint_radius(400.0) > 0
+
+
+def test_od_convergence():
+    from orbitas_rt.od import batch_least_squares
+    import numpy as np
+    # estado inicial: órbita circular a 7000 km
+    r0 = np.array([7000000.0, 0.0, 0.0])
+    v0 = np.array([0.0, 7500.0, 0.0])
+    x0 = np.concatenate([r0, v0])
+    # mediciones: posición en t=0, 10, 20 s (con ruido pequeño)
+    t_meas = np.array([0.0, 10.0, 20.0])
+    meas = np.zeros((3, 3))
+    for i, ti in enumerate(t_meas):
+        # propagar
+        from orbitas_rt.orbit3d import rk4_step
+        r, v = r0.copy(), v0.copy()
+        nsub = max(1, int(abs(ti) / 1.0))
+        h = ti / nsub if nsub > 0 else 0
+        for _ in range(nsub):
+            r, v = rk4_step(r, v, h)
+        meas[i] = r + np.random.normal(0, 1.0, 3)
+    x_est, resid, hist = batch_least_squares(meas, t_meas, x0, max_iter=5, tol=1e6)
+    assert x_est.shape == (6,)
+    assert len(hist) > 0
+    # el estado estimado debe estar cerca del inicial (ruido pequeño)
+    assert np.linalg.norm(x_est[:3] - r0) < 1000.0
+
+
 if __name__ == "__main__":  # permite correr sin pytest
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

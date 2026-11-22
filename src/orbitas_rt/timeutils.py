@@ -17,6 +17,7 @@ import numpy as np
 # Constantes
 J2000 = 2451545.0  # JD del 2000-01-01 12:00 TT
 OMEGA_EARTH = 7.2921159e-5  # rad/s (rotación terrestre)
+RE = 6371000.0  # m (radio terrestre)
 
 
 def utc_to_jd(dt: datetime) -> float:

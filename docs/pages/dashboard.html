@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<title>Dashboard Orbital Unificado</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  body { margin: 0; font-family: sans-serif; background: #0b1020; color: #eee; }
+  .header { padding: 12px 16px; background: #16213e; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .header h1 { margin: 0; font-size: 18px; color: #4da6ff; }
+  .header label { font-size: 13px; }
+  .header input, .header select { padding: 6px 8px; border-radius: 4px; border: 1px solid #444; background: #0f3460; color: #eee; }
+  .header button { padding: 6px 14px; border-radius: 4px; border: none; background: #e94560; color: white; cursor: pointer; font-weight: bold; }
+  .header button:hover { background: #ff6b6b; }
+  #map { height: 75vh; width: 100%; }
+  .info { padding: 8px 16px; background: #0f3460; font-size: 12px; min-height: 20px; }
+  .legend { position: absolute; bottom: 90px; left: 10px; z-index: 1000;
+            background: rgba(0,0,0,0.7); color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Dashboard Orbital</h1>
+  <label>Régimen: <select id="regime" style="width:140px;">
+    <option value="leo">LEO/MEO (CelesTrak)</option>
+    <option value="cislunar">Cislunar (Horizons)</option>
+    <option value="interplanetary">Interplanetario (Horizons)</option>
+    <option value="stations">Estaciones de rastreo</option>
+  </select></label>
+  <label>ID: <input id="objid" type="text" value="25544" style="width:100px"/></label>
+  <label>Inicio: <input id="start" type="date" style="width:140px"/></label>
+  <label>Fin: <input id="stop" type="date" style="width:140px"/></label>
+  <button onclick="runQuery()">Consultar</button>
+  <span id="status" style="font-size:12px;color:#aaa;"></span>
+</div>
+<div id="map"></div>
+<div class="info" id="info">Selecciona un régimen y un objeto, luego pulsa "Consultar".</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map', {
+    maxBounds: [[-90, -180], [90, 180]],
+    maxBoundsViscosity: 1.0,
+    worldCopyJump: false
+  }).setView([0, 0], 2);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 8, noWrap: true, attribution: 'Tiles &copy; Esri, DeLorme, NAVTEQ'
+  }).addTo(map);
+
+  let layer = null;
+
+  async function runQuery() {
+    const regime = document.getElementById('regime').value;
+    const id = document.getElementById('objid').value.trim();
+    const start = document.getElementById('start').value;
+    const stop = document.getElementById('stop').value;
+    const status = document.getElementById('status');
+    const info = document.getElementById('info');
+    status.textContent = 'Consultando...';
+    if (layer) { map.removeLayer(layer); layer = null; }
+
+    try {
+      if (regime === 'stations') {
+        const res = await fetch('/api/stations');
+        const data = await res.json();
+        layer = L.featureGroup().addTo(map);
+        data.forEach(s => {
+          L.circleMarker([s.lat, s.lon], {radius:5, color:'#4fc3f7', fillColor:'#4fc3f7', fillOpacity:0.8})
+            .addTo(layer).bindPopup('<b>'+s.name+'</b><br/>'+s.operator+'<br/>'+s.country+'<br/>'+s.desc);
+        });
+        map.fitBounds(layer.getBounds());
+        info.textContent = data.length + ' estaciones de rastreo.';
+        status.textContent = 'OK';
+        return;
+      }
+
+      if (regime === 'leo') {
+        const url = '/api/query?norad=' + id + '&norbits=3&step=2' + (start ? '&start=' + start + 'T00:00' : '');
+        const res = await fetch(url);
+        if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+        const data = await res.json();
+        const pts = data.points.map(p => [p.lat, p.lon]);
+        const segs = []; let cur = [pts[0]];
+        for (let i = 1; i < pts.length; i++) {
+          if (Math.abs(pts[i][1]-pts[i-1][1]) > 180) { segs.push(cur); cur = [pts[i]]; }
+          else cur.push(pts[i]);
+        }
+        segs.push(cur);
+        layer = L.featureGroup().addTo(map);
+        segs.forEach(seg => { if (seg.length < 2) return; L.polyline(seg, {color:'#d62728', weight:2, opacity:0.85}).addTo(layer); });
+        L.circleMarker(pts[0], {radius:6, color:'green'}).addTo(layer);
+        L.circleMarker(pts[pts.length-1], {radius:6, color:'red'}).addTo(layer);
+        map.fitBounds(layer.getBounds());
+        info.textContent = 'Satélite: ' + data.sat + ' | Órbitas: ' + data.norbits + ' | Puntos: ' + pts.length;
+        status.textContent = 'OK';
+        return;
+      }
+
+      // cislunar / interplanetary: use canvas overlay (simplified)
+      info.textContent = 'Para cislunar/interplanetario usa run_lunar.py / run_mars.py / run_deep_space.py';
+      status.textContent = 'Ver scripts';
+    } catch (e) {
+      status.textContent = 'Error';
+      info.textContent = 'Error: ' + e.message;
+    }
+  }
+
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('start').value = now.toISOString().slice(0,10);
+  const stop = new Date(now.getTime() + 3*86400000);
+  document.getElementById('stop').value = stop.toISOString().slice(0,10);
+</script>
+</body>
+</html>
