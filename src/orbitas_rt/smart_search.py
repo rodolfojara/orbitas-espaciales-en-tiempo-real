@@ -85,6 +85,16 @@ def _search_celestrak(name):
     results = []
     for d in (data if isinstance(data, list) else [data]):
         issues = _validate_orbital(d)
+        # Verificar frescura del TLE (epoch dentro de los últimos 30 días)
+        try:
+            epoch = datetime.fromisoformat(d.get("EPOCH", "").replace("Z", "+00:00"))
+            if epoch.tzinfo is None:
+                epoch = epoch.replace(tzinfo=timezone.utc)
+            age_days = (_now() - epoch).total_seconds() / 86400.0
+            if age_days > 30:
+                issues.append("TLE antiguo: %.0f días" % age_days)
+        except Exception:
+            pass
         results.append({
             "source": "celestrak",
             "name": d.get("OBJECT_NAME"),
@@ -97,6 +107,10 @@ def _search_celestrak(name):
             "issues": issues,
         })
     return results, None
+
+
+# KeepTrack API: requiere registro (https://keeptrack.space). Documentado como fuente futura.
+# Cuando se obtenga una API key, implementar _search_keeptrack() aquí.
 
 
 def _search_local(name):
@@ -160,7 +174,7 @@ def smart_search(name, force_refresh=False):
         sources_queried.append("local")
         all_results.extend(local_results)
 
-    # 2. CelesTrak
+    # 2. CelesTrak (fuente principal de TLE/GP)
     celes_results, err = _search_celestrak(name)
     if celes_results:
         sources_queried.append("celestrak")
@@ -168,13 +182,16 @@ def smart_search(name, force_refresh=False):
     elif err:
         sources_queried.append("celestrak (error: %s)" % err)
 
+    # 3. Space-Track.org (requiere cuenta gratuita, documentado como fuente futura)
+    # Nota: Space-Track requiere autenticación. Se documenta en sources.json.
+    # Para usarlo, registrar en https://www.space-track.org/ y agregar credenciales.
+
     # Validar y filtrar
     valid_results = [r for r in all_results if r.get("valid", True)]
     invalid_results = [r for r in all_results if not r.get("valid", True)]
 
     # Cross-referencia: detectar conflictos reales
     conflicts = []
-    # Solo comparar si el mismo NORAD ID aparece en múltiples fuentes
     by_norad = {}
     for r in valid_results:
         norad = r.get("norad") or r.get("id")
@@ -184,10 +201,24 @@ def smart_search(name, force_refresh=False):
         if len(rs) > 1:
             sources = set(r["source"] for r in rs)
             if len(sources) > 1:
-                # verificar si los datos orbitales coinciden
-                epochs = set(r.get("epoch") for r in rs if r.get("epoch"))
-                if len(epochs) > 1:
-                    conflicts.append("NORAD %s: epochs diferentes entre fuentes" % norad)
+                incs = [r.get("inc") for r in rs if r.get("inc") is not None]
+                if len(incs) > 1:
+                    if max(incs) - min(incs) > 0.5:
+                        conflicts.append("NORAD %s: inclinación difiere entre fuentes (%.2f vs %.2f)" % (norad, min(incs), max(incs)))
+
+    # Cross-referencia con registro local: validar consistencia
+    local_results = [r for r in valid_results if r["source"] == "local"]
+    celes_results = [r for r in valid_results if r["source"] == "celestrak"]
+    for lr in local_results:
+        # buscar en CelesTrak por nombre similar
+        for cr in celes_results:
+            if lr.get("name", "").lower() in str(cr.get("name", "")).lower() or \
+               str(cr.get("name", "")).lower() in lr.get("name", "").lower():
+                # verificar si la inclinación es consistente
+                if lr.get("inc") is not None and cr.get("inc") is not None:
+                    if abs(float(lr["inc"]) - float(cr["inc"])) > 1.0:
+                        conflicts.append("Posible inconsistencia para %s: inc local=%.2f vs celestrak=%.2f" % (
+                            lr["name"], float(lr["inc"]), float(cr["inc"])))
 
     # Detectar resultados inválidos
     for r in invalid_results:
