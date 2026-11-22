@@ -1,0 +1,106 @@
+{
+  "voyager": {
+    "timestamp": "2026-11-22T20:08:35.138586+00:00",
+    "results": [
+      {
+        "source": "local",
+        "name": "Voyager 1",
+        "id": -31,
+        "agency": "NASA",
+        "target": "Espacio interestelar",
+        "launch": "1977-09-05",
+        "status": "operativo",
+        "desc": "Nave más lejana. En espacio interestelar desde 2012.",
+        "type": "local",
+        "confidence": "high"
+      },
+      {
+        "source": "local",
+        "name": "Voyager 2",
+        "id": -32,
+        "agency": "NASA",
+        "target": "Espacio interestelar",
+        "launch": "1977-08-20",
+        "status": "operativo",
+        "desc": "Única nave que visitó los 4 gigantes gaseosos. En espacio interestelar desde 2018.",
+        "type": "local",
+        "confidence": "high"
+      },
+      {
+        "source": "horizons",
+        "name": "-31  Voyager 1 (spacecraft)             1977-084A",
+        "id": -31,
+        "type": "horizons",
+        "confidence": "high"
+      },
+      {
+        "source": "horizons",
+        "name": "-32  Voyager 2 (spacecraft)             1977-076A",
+        "id": -32,
+        "type": "horizons",
+        "confidence": "high"
+      }
+    ],
+    "conflicts": [],
+    "sources_queried": [
+      "local",
+      "local (alias: Voyager 1)",
+      "local (alias: Voyager 2)",
+      "horizons"
+    ],
+    "confidence": "high",
+    "cached": false
+  },
+  "cassini": {
+    "timestamp": "2026-11-22T20:08:53.650479+00:00",
+    "results": [
+      {
+        "source": "local",
+        "name": "Cassini",
+        "id": -82,
+        "agency": "NASA/ESA",
+        "target": "Saturno",
+        "launch": "1997-10-15",
+        "status": "completed",
+        "desc": "Orbitador de Saturno. Fin de misión 2017 (impacto en Saturno).",
+        "type": "local",
+        "confidence": "high"
+      },
+      {
+        "source": "local",
+        "name": "Cassini-Huygens",
+        "id": -150,
+        "agency": "NASA/ESA",
+        "target": "Saturno",
+        "launch": "1997-10-15",
+        "status": "completed",
+        "desc": "Orbitador de Saturno + lander en Titán. Fin de misión 2017.",
+        "type": "local",
+        "confidence": "high"
+      },
+      {
+        "source": "horizons",
+        "name": "-82  Cassini (spacecraft)               1997-061A",
+        "id": -82,
+        "type": "horizons",
+        "confidence": "high"
+      },
+      {
+        "source": "horizons",
+        "name": "-150  Cassini Huygens (spacecraft)       1997-061C",
+        "id": -150,
+        "type": "horizons",
+        "confidence": "high"
+      }
+    ],
+    "conflicts": [],
+    "sources_queried": [
+      "local",
+      "local (alias: Cassini)",
+      "horizons",
+      "horizons (alias: Cassini)"
+    ],
+    "confidence": "high",
+    "cached": false
+  }
+}

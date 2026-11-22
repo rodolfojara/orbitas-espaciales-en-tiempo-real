@@ -74,6 +74,7 @@ from sgp4 import omm
 from orbitas_rt.tle import fetch_gp
 from orbitas_rt.horizons import fetch_vectors
 from orbitas_rt.lookup import lookup, lookup_full
+from orbitas_rt.deep_search import deep_search, get_knowledge_base, search_knowledge_base
 
 ROOT = os.path.join(os.path.dirname(__file__), "output")
 PORT = 8000
@@ -265,6 +266,20 @@ class Handler(SimpleHTTPRequestHandler):
             name = params.get("name", [""])[0]
             force = params.get("force", ["0"])[0] == "1"
             result = lookup_full(name, force_refresh=force)
+            body = json.dumps(result).encode()
+        elif parsed.path == "/api/deep_search":
+            params = parse_qs(parsed.query)
+            name = params.get("name", [""])[0]
+            force = params.get("force", ["0"])[0] == "1"
+            result = deep_search(name, use_cache=not force)
+            body = json.dumps(result).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(body)
+        elif parsed.path == "/api/knowledge_base":
+            result = get_knowledge_base()
             body = json.dumps(result).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
