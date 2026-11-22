@@ -151,6 +151,13 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   python examples/run_mars.py --sc -74
   ```
 
+- **Trayectorias en espacio profundo** (más allá de la Luna) desde JPL Horizons:
+  ```bash
+  python examples/run_deep_space.py --list
+  python examples/run_deep_space.py --sc -98   # New Horizons
+  python examples/run_deep_space.py --sc -31    # Voyager 1
+  ```
+
 - **Mapas web cislunar y marciano** (canvas, sin tiles):
   ```bash
   python examples/serve.py
