@@ -182,9 +182,37 @@ def smart_search(name, force_refresh=False):
     elif err:
         sources_queried.append("celestrak (error: %s)" % err)
 
-    # 3. Space-Track.org (requiere cuenta gratuita, documentado como fuente futura)
-    # Nota: Space-Track requiere autenticación. Se documenta en sources.json.
-    # Para usarlo, registrar en https://www.space-track.org/ y agregar credenciales.
+    # 3. Space-Track.org (catálogo oficial, requiere cuenta gratuita)
+    from .spacetrack import is_configured, search_by_name, search_by_norad
+    if is_configured():
+        if name.strip().lstrip("-").isdigit():
+            st_results, err = search_by_norad(int(name.strip()))
+        else:
+            st_results, err = search_by_name(name.strip())
+        if st_results:
+            sources_queried.append("spacetrack")
+            # Validar resultados de Space-Track
+            for r in st_results:
+                issues = _validate_orbital({"INCLINATION": r.get("inc"), "ECCENTRICITY": r.get("ecc"),
+                                            "MEAN_MOTION": r.get("mm")})
+                # Verificar frescura
+                if r.get("epoch"):
+                    try:
+                        epoch = datetime.fromisoformat(r["epoch"].replace("Z", "+00:00"))
+                        if epoch.tzinfo is None:
+                            epoch = epoch.replace(tzinfo=timezone.utc)
+                        age_days = (_now() - epoch).total_seconds() / 86400.0
+                        if age_days > 30:
+                            issues.append("TLE antiguo: %.0f días" % age_days)
+                    except Exception:
+                        pass
+                r["valid"] = len(issues) == 0
+                r["issues"] = issues
+            all_results.extend(st_results)
+        elif err:
+            sources_queried.append("spacetrack (error: %s)" % err)
+    else:
+        sources_queried.append("spacetrack (no configurado - ver docs)")
 
     # Validar y filtrar
     valid_results = [r for r in all_results if r.get("valid", True)]
