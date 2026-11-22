@@ -6,3 +6,5 @@ build/
 dist/
 *.mp4
 search_cache.json
+deep_search_cache.json
+knowledge_base.json
