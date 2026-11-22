@@ -13,29 +13,38 @@
   .header input, .header select { padding: 6px 8px; border-radius: 4px; border: 1px solid #444; background: #0f3460; color: #eee; }
   .header button { padding: 6px 14px; border-radius: 4px; border: none; background: #e94560; color: white; cursor: pointer; font-weight: bold; }
   .header button:hover { background: #ff6b6b; }
-  #map { height: 75vh; width: 100%; }
+  #map { height: 70vh; width: 100%; }
   .info { padding: 8px 16px; background: #0f3460; font-size: 12px; min-height: 20px; }
-  .legend { position: absolute; bottom: 90px; left: 10px; z-index: 1000;
+  .legend { position: absolute; bottom: 80px; left: 10px; z-index: 1000;
             background: rgba(0,0,0,0.7); color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; }
+  .results { padding: 8px 16px; background: #1a1a2e; font-size: 12px; max-height: 120px; overflow-y: auto; }
+  .results a { color: #4fc3f7; margin-right: 12px; cursor: pointer; }
 </style>
 </head>
 <body>
 <div class="header">
-  <h1>Dashboard Orbital</h1>
+  <h1>Dashboard Orbital Unificado</h1>
   <label>Régimen: <select id="regime" style="width:140px;">
     <option value="leo">LEO/MEO (CelesTrak)</option>
-    <option value="cislunar">Cislunar (Horizons)</option>
-    <option value="interplanetary">Interplanetario (Horizons)</option>
     <option value="stations">Estaciones de rastreo</option>
   </select></label>
+  <label>Buscar: <input id="search" type="text" placeholder="ISS, SSOT, suchai..." style="width:140px"/></label>
+  <button onclick="searchObj()">Buscar</button>
   <label>ID: <input id="objid" type="text" value="25544" style="width:100px"/></label>
-  <label>Inicio: <input id="start" type="date" style="width:140px"/></label>
-  <label>Fin: <input id="stop" type="date" style="width:140px"/></label>
+  <label>Inicio: <input id="start" type="date" style="width:130px"/></label>
+  <label>Fin: <input id="stop" type="date" style="width:130px"/></label>
+  <label>Órbitas: <input id="norbits" type="number" value="3" min="1" max="20" style="width:50px"/></label>
   <button onclick="runQuery()">Consultar</button>
   <span id="status" style="font-size:12px;color:#aaa;"></span>
 </div>
+<div id="searchResults" class="results" style="display:none;"></div>
 <div id="map"></div>
 <div class="info" id="info">Selecciona un régimen y un objeto, luego pulsa "Consultar".</div>
+<div class="legend" id="legend" style="display:none;">
+  <span style="color:#d62728">—</span> Trayectoria<br/>
+  <span style="color:#00ff88">●</span> Inicio<br/>
+  <span style="color:#ff5555">●</span> Fin
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -50,11 +59,60 @@
 
   let layer = null;
 
+  async function searchObj() {
+    const name = document.getElementById('search').value.trim();
+    if (!name) return;
+    const resDiv = document.getElementById('searchResults');
+    resDiv.style.display = 'block';
+    resDiv.textContent = 'Buscando en múltiples fuentes...';
+    try {
+      const res = await fetch('/api/lookup?name=' + encodeURIComponent(name));
+      const data = await res.json();
+      if (!data || !data.length) { resDiv.textContent = 'Sin resultados.'; return; }
+      resDiv.innerHTML = 'Resultados:<br/>' + data.map(r =>
+        '<a onclick="selectObj(\'' + (r.norad||r.id) + '\',\'' + r.type + '\');return false;">' +
+        r.name + ' (' + r.source + (r.norad ? ', NORAD ' + r.norad : '') + ')</a>'
+      ).join(' ');
+    } catch (e) {
+      resDiv.textContent = 'Error: ' + e.message;
+    }
+  }
+  function selectObj(id, type) {
+    document.getElementById('objid').value = id;
+    if (type === 'leo' || type === 'horizons') document.getElementById('regime').value = 'leo';
+    document.getElementById('searchResults').style.display = 'none';
+  }
+
+  function makeDayNight(subsolarLon, subsolarLat) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 720; canvas.height = 360;
+    const ctx = canvas.getContext('2d');
+    const img = ctx.createImageData(720, 360);
+    for (let y = 0; y < 360; y++) {
+      for (let x = 0; x < 720; x++) {
+        const lon = (x/720)*360 - 180;
+        const lat = 90 - (y/360)*180;
+        const cosz = Math.sin(subsolarLat*Math.PI/180)*Math.sin(lat*Math.PI/180) +
+                     Math.cos(subsolarLat*Math.PI/180)*Math.cos(lat*Math.PI/180)*Math.cos((lon-subsolarLon)*Math.PI/180);
+        const zenith = Math.acos(Math.max(-1, Math.min(1, cosz)));
+        const night = zenith > Math.PI/2;
+        const darkness = night ? Math.min(1, (zenith-Math.PI/2)/(Math.PI/2)) : 0;
+        const gray = 0.60 - 0.45*darkness;
+        const alpha = night ? 0.40 + 0.45*darkness : 0;
+        const i = (y*720+x)*4;
+        img.data[i]=gray*255; img.data[i+1]=gray*255; img.data[i+2]=(gray+0.02)*255; img.data[i+3]=alpha*255;
+      }
+    }
+    ctx.putImageData(img,0,0);
+    return canvas.toDataURL();
+  }
+
   async function runQuery() {
     const regime = document.getElementById('regime').value;
     const id = document.getElementById('objid').value.trim();
     const start = document.getElementById('start').value;
     const stop = document.getElementById('stop').value;
+    const norbits = document.getElementById('norbits').value;
     const status = document.getElementById('status');
     const info = document.getElementById('info');
     status.textContent = 'Consultando...';
@@ -75,31 +133,26 @@
         return;
       }
 
-      if (regime === 'leo') {
-        const url = '/api/query?norad=' + id + '&norbits=3&step=2' + (start ? '&start=' + start + 'T00:00' : '');
-        const res = await fetch(url);
-        if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
-        const data = await res.json();
-        const pts = data.points.map(p => [p.lat, p.lon]);
-        const segs = []; let cur = [pts[0]];
-        for (let i = 1; i < pts.length; i++) {
-          if (Math.abs(pts[i][1]-pts[i-1][1]) > 180) { segs.push(cur); cur = [pts[i]]; }
-          else cur.push(pts[i]);
-        }
-        segs.push(cur);
-        layer = L.featureGroup().addTo(map);
-        segs.forEach(seg => { if (seg.length < 2) return; L.polyline(seg, {color:'#d62728', weight:2, opacity:0.85}).addTo(layer); });
-        L.circleMarker(pts[0], {radius:6, color:'green'}).addTo(layer);
-        L.circleMarker(pts[pts.length-1], {radius:6, color:'red'}).addTo(layer);
-        map.fitBounds(layer.getBounds());
-        info.textContent = 'Satélite: ' + data.sat + ' | Órbitas: ' + data.norbits + ' | Puntos: ' + pts.length;
-        status.textContent = 'OK';
-        return;
+      const url = '/api/query?norad=' + id + '&norbits=' + norbits + '&step=2' + (start ? '&start=' + start + 'T00:00' : '');
+      const res = await fetch(url);
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+      const data = await res.json();
+      const pts = data.points.map(p => [p.lat, p.lon]);
+      const segs = []; let cur = [pts[0]];
+      for (let i = 1; i < pts.length; i++) {
+        if (Math.abs(pts[i][1]-pts[i-1][1]) > 180) { segs.push(cur); cur = [pts[i]]; }
+        else cur.push(pts[i]);
       }
-
-      // cislunar / interplanetary: use canvas overlay (simplified)
-      info.textContent = 'Para cislunar/interplanetario usa run_lunar.py / run_mars.py / run_deep_space.py';
-      status.textContent = 'Ver scripts';
+      segs.push(cur);
+      layer = L.featureGroup().addTo(map);
+      segs.forEach(seg => { if (seg.length < 2) return; L.polyline(seg, {color:'#d62728', weight:2, opacity:0.85}).addTo(layer); });
+      L.circleMarker(pts[0], {radius:6, color:'green'}).addTo(layer);
+      L.circleMarker(pts[pts.length-1], {radius:6, color:'red'}).addTo(layer);
+      const dnUrl = makeDayNight(data.subsolar_lon, data.subsolar_lat);
+      L.imageOverlay(dnUrl, [[-90,-180],[90,180]], {opacity:0.7, interactive:false}).addTo(map);
+      map.fitBounds(layer.getBounds());
+      info.textContent = 'Satélite: ' + data.sat + ' | Órbitas: ' + data.norbits + ' | Puntos: ' + pts.length;
+      status.textContent = 'OK';
     } catch (e) {
       status.textContent = 'Error';
       info.textContent = 'Error: ' + e.message;

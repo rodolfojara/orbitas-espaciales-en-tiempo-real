@@ -73,6 +73,7 @@ from sgp4.api import Satrec, jday
 from sgp4 import omm
 from orbitas_rt.tle import fetch_gp
 from orbitas_rt.horizons import fetch_vectors
+from orbitas_rt.lookup import lookup
 
 ROOT = os.path.join(os.path.dirname(__file__), "output")
 PORT = 8000
@@ -259,6 +260,16 @@ class Handler(SimpleHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed.path == "/api/lookup":
+            params = parse_qs(parsed.query)
+            name = params.get("name", [""])[0]
+            result = lookup(name)
+            body = json.dumps(result).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(body)
         elif parsed.path == "/api/stations":
             with open(STATIONS_FILE, encoding="utf-8") as f:
                 data = json.load(f)
