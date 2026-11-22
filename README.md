@@ -158,6 +158,11 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   python examples/run_deep_space.py --sc -31    # Voyager 1
   ```
 
+- **Determinación de órbitas** (batch least squares, Gauss-Newton):
+  ```bash
+  python examples/run_od.py
+  ```
+
 - **Mapas web cislunar y marciano** (canvas, sin tiles):
   ```bash
   python examples/serve.py

@@ -466,5 +466,230 @@
     "launch": "2020-07-23",
     "status": "operativo",
     "desc": "Mision china a Marte. Orbitador + lander + rover Zhurong. En orbita marciana."
+  },
+  {
+    "id": -2,
+    "name": "Mariner 2",
+    "agency": "NASA",
+    "target": "Venus",
+    "launch": "1962-08-27",
+    "status": "completed",
+    "desc": "Primera nave en sobrevolar Venus (1962)."
+  },
+  {
+    "id": -6,
+    "name": "Pioneer 6",
+    "agency": "NASA",
+    "target": "Sol",
+    "launch": "1965-12-16",
+    "status": "completed",
+    "desc": "Estudio del viento solar. Fin de misión 2000."
+  },
+  {
+    "id": -8,
+    "name": "Wind",
+    "agency": "NASA",
+    "target": "Punto L1",
+    "launch": "1994-11-01",
+    "status": "operativo",
+    "desc": "Estudio del viento solar. En L1."
+  },
+  {
+    "id": -20,
+    "name": "Pioneer 8",
+    "agency": "NASA",
+    "target": "Sol",
+    "launch": "1967-12-13",
+    "status": "completed",
+    "desc": "Estudio del viento solar."
+  },
+  {
+    "id": -33,
+    "name": "NEO Surveyor",
+    "agency": "NASA",
+    "target": "Tierra (órbita)",
+    "launch": "2025-09-24",
+    "status": "operativo",
+    "desc": "Búsqueda de asteroides cercanos a la Tierra."
+  },
+  {
+    "id": -39,
+    "name": "Ouna (Kaguya)",
+    "agency": "JAXA",
+    "target": "Luna",
+    "launch": "2007-09-14",
+    "status": "completed",
+    "desc": "Cubesat japonés (Kaguya)."
+  },
+  {
+    "id": -111,
+    "name": "ICE",
+    "agency": "NASA",
+    "target": "Cometa Giacobini-Zinner",
+    "launch": "1978-08-12",
+    "status": "completed",
+    "desc": "International Cometary Explorer. Sobrevoló cometa Giacobini-Zinner (1985)."
+  },
+  {
+    "id": -170,
+    "name": "JWST",
+    "agency": "NASA/ESA/CSA",
+    "target": "Punto L2",
+    "launch": "2021-12-25",
+    "status": "operativo",
+    "desc": "James Webb Space Telescope. En L2."
+  },
+  {
+    "id": -178,
+    "name": "Nozomi",
+    "agency": "JAXA",
+    "target": "Marte",
+    "launch": "1998-07-03",
+    "status": "completed",
+    "desc": "Misión japonesa a Marte. Falló inserción orbital (2003)."
+  },
+  {
+    "id": -182,
+    "name": "NEA Scout",
+    "agency": "NASA",
+    "target": "Asteroide (planeado)",
+    "launch": "2022-11-16",
+    "status": "completed",
+    "desc": "Cubesat solar sail. No desplegó vela."
+  },
+  {
+    "id": -198,
+    "name": "INTEGRAL",
+    "agency": "ESA",
+    "target": "Tierra (órbita alta)",
+    "launch": "2002-10-17",
+    "status": "operativo",
+    "desc": "International Gamma-Ray Astrophysics Laboratory."
+  },
+  {
+    "id": -210,
+    "name": "LICIACube",
+    "agency": "ASI",
+    "target": "Asteroide Didymos",
+    "launch": "2021-11-24",
+    "status": "completed",
+    "desc": "Cubesat italiano (acompañó a DART)."
+  },
+  {
+    "id": -211,
+    "name": "Roman Space Telescope",
+    "agency": "NASA",
+    "target": "Punto L2",
+    "launch": "2027-05-01",
+    "status": "en desarrollo",
+    "desc": "Nancy Grace Roman Space Telescope. Lanzamiento 2027."
+  },
+  {
+    "id": -226,
+    "name": "Rosetta",
+    "agency": "ESA",
+    "target": "Cometa 67P",
+    "launch": "2004-03-02",
+    "status": "completed",
+    "desc": "Orbitó cometa 67P/Churyumov-Gerasimenko. Lander Philae."
+  },
+  {
+    "id": -227,
+    "name": "Kepler",
+    "agency": "NASA",
+    "target": "Tierra (órbita heliocéntrica)",
+    "launch": "2009-03-06",
+    "status": "completed",
+    "desc": "Telescopio de exoplanetas. Fin de misión 2018."
+  },
+  {
+    "id": -234,
+    "name": "STEREO-A",
+    "agency": "NASA",
+    "target": "Sol",
+    "launch": "2006-10-25",
+    "status": "operativo",
+    "desc": "Solar Terrestrial Relations Observatory (Ahead)."
+  },
+  {
+    "id": -235,
+    "name": "STEREO-B",
+    "agency": "NASA",
+    "target": "Sol",
+    "launch": "2006-10-25",
+    "status": "completed",
+    "desc": "Solar Terrestrial Relations Observatory (Behind). Contacto perdido 2016."
+  },
+  {
+    "id": -248,
+    "name": "Venus Express",
+    "agency": "ESA",
+    "target": "Venus",
+    "launch": "2005-11-09",
+    "status": "completed",
+    "desc": "Orbitador de Venus. Fin de misión 2014."
+  },
+  {
+    "id": -344,
+    "name": "Galileo Probe",
+    "agency": "NASA",
+    "target": "Júpiter",
+    "launch": "1989-10-18",
+    "status": "completed",
+    "desc": "Sonda atmosférica de Júpiter (1995)."
+  },
+  {
+    "id": -486,
+    "name": "Herschel",
+    "agency": "ESA",
+    "target": "Punto L2",
+    "launch": "2009-05-14",
+    "status": "completed",
+    "desc": "Observatorio infrarrojo. Fin de misión 2013."
+  },
+  {
+    "id": -489,
+    "name": "Planck",
+    "agency": "ESA",
+    "target": "Punto L2",
+    "launch": "2009-05-14",
+    "status": "completed",
+    "desc": "Observatorio de fondo cósmico de microondas. Fin de misión 2013."
+  },
+  {
+    "id": -557,
+    "name": "Spektr-R",
+    "agency": "Roscosmos",
+    "target": "Tierra (órbita alta)",
+    "launch": "2011-07-18",
+    "status": "completed",
+    "desc": "Radiotelescopio espacial. Fin de misión 2019."
+  },
+  {
+    "id": -640,
+    "name": "ISO",
+    "agency": "ESA",
+    "target": "Tierra (órbita alta)",
+    "launch": "1995-11-17",
+    "status": "completed",
+    "desc": "Infrared Space Observatory. Fin de misión 1998."
+  },
+  {
+    "id": -680,
+    "name": "Euclid",
+    "agency": "ESA",
+    "target": "Punto L2",
+    "launch": "2023-07-01",
+    "status": "operativo",
+    "desc": "Telescopio espacial para materia oscura/energía oscura."
+  },
+  {
+    "id": -78000,
+    "name": "Chang'e 5-T1 booster",
+    "agency": "CNSA",
+    "target": "Luna",
+    "launch": "2014-10-23",
+    "status": "completed",
+    "desc": "Booster de la misión de prueba lunar china."
   }
 ]
