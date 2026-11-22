@@ -158,6 +158,12 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   python examples/run_deep_space.py --sc -31    # Voyager 1
   ```
 
+- **Objetos perdidos** (etapas de cohetes, impactores, etc.):
+  ```bash
+  python examples/run_lost_objects.py --list
+  python examples/run_lost_objects.py --sc -399080  # Apollo 8 S-IVB
+  ```
+
 - **Determinación de órbitas** (batch least squares, Gauss-Newton):
   ```bash
   python examples/run_od.py

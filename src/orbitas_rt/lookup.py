@@ -28,7 +28,7 @@ def _load_json(name):
 
 
 def search_local(name_or_id):
-    """Busca en los registros locales (deep_space, etc.)."""
+    """Busca en los registros locales (deep_space, lost_objects, etc.)."""
     results = []
     # deep_space
     for s in _load_json("deep_space.json"):
@@ -38,6 +38,14 @@ def search_local(name_or_id):
                            "agency": s.get("agency"), "target": s.get("target"),
                            "launch": s.get("launch"), "status": s.get("status"),
                            "desc": s.get("desc"), "type": "deep_space"})
+    # lost_objects
+    for s in _load_json("lost_objects.json"):
+        if (str(name_or_id).lower() in str(s.get("name", "")).lower() or
+            str(name_or_id) == str(s.get("id", ""))):
+            results.append({"source": "local", "name": s["name"], "id": s["id"],
+                           "agency": "N/A", "target": s.get("mission", ""),
+                           "launch": s.get("launch"), "status": s.get("status"),
+                           "desc": s.get("desc"), "type": "lost_object"})
     return results
 
 
