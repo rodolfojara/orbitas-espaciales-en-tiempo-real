@@ -113,11 +113,15 @@
         resDiv.textContent = 'Sin resultados para "' + name + '".';
         return;
       }
-      resDiv.innerHTML = 'Resultados para "' + data.query + '":<br/>' +
-        data.results.map(r =>
-          '<a href="#" onclick="selectSat(' + r.norad + ');return false;" style="color:#4fc3f7;margin-right:12px;">' +
-          r.name + ' (NORAD ' + r.norad + ', inc ' + (r.inc||'?').toFixed(1) + '°)</a>'
-        ).join(' ');
+      let html = 'Resultados para "' + (data.query||'') + '"' + (data.cached ? ' (cache)' : '') + ':<br/>';
+      html += data.results.map(r =>
+        '<a href="#" onclick="selectSat(' + (r.norad||r.id) + ');return false;" style="color:#4fc3f7;margin-right:12px;">' +
+        r.name + ' (' + r.source + (r.norad ? ', NORAD ' + r.norad : '') + (r.valid===false ? ' warning' : '') + ')</a>'
+      ).join(' ');
+      if (data.conflicts && data.conflicts.length) {
+        html += '<br/><span style="color:#ff7f0e;font-size:11px;">warning ' + data.conflicts.join('; ') + '</span>';
+      }
+      resDiv.innerHTML = html;
     } catch (e) {
       resDiv.textContent = 'Error: ' + e.message;
     }

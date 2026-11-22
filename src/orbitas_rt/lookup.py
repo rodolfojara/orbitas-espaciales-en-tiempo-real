@@ -86,17 +86,16 @@ def search_celestrak(name_or_id):
         return []
 
 
-def lookup(name_or_id):
-    """Búsqueda multi-fuente. Devuelve lista de resultados combinados."""
-    results = []
-    # 1. Local
-    results.extend(search_local(name_or_id))
-    # 2. CelesTrak (por nombre o NORAD)
-    results.extend(search_celestrak(name_or_id))
-    # 3. Horizons (si es un ID negativo o nombre conocido)
-    if str(name_or_id).lstrip("-").isdigit() and int(name_or_id) < 0:
-        results.extend(search_horizons(name_or_id))
-    return results
+def lookup(name_or_id, force_refresh=False):
+    """Búsqueda inteligente multi-fuente con validación y caché."""
+    from .smart_search import smart_search
+    result = smart_search(str(name_or_id), force_refresh=force_refresh)
+    return result["results"]
+
+def lookup_full(name_or_id, force_refresh=False):
+    """Búsqueda completa con conflictos y metadatos."""
+    from .smart_search import smart_search
+    return smart_search(str(name_or_id), force_refresh=force_refresh)
 
 
 # Need urllib.parse
