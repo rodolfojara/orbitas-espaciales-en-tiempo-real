@@ -1,6 +1,6 @@
 # Órbitas Espaciales en Tiempo Real
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](tests/test_basic.py)
 [![GitHub Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://rodolfojara.github.io/orbitas-espaciales-en-tiempo-real/)
@@ -112,6 +112,9 @@ cuando ocurre algo que el modelo no puede adivinar.
 
 ## Visualización orbital
 
+¿Qué coordenadas se usan en cada escala (TLE, cislunar, heliocéntrica, marciana)?
+Está explicado en [`docs/COORDINADAS.md`](docs/COORDINADAS.md).
+
 Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbitales
 (`src/orbitas_rt/viz.py`):
 
@@ -145,10 +148,11 @@ Además de las gráficas del filtro, el paquete incluye dos visualizaciones orbi
   python examples/run_lunar.py --sc -85
   ```
 
-- **Trayectorias marcianas (heliocéntricas)** desde JPL Horizons (MRO, Perseverance, etc.):
+- **Trayectorias marcianas** desde JPL Horizons (MRO, Perseverance, etc.):
   ```bash
   python examples/run_mars.py --list
-  python examples/run_mars.py --sc -74
+  python examples/run_mars.py --sc -74                # crucero heliocéntrico
+  python examples/run_mars.py --sc -74 --center mars  # órbita marcocéntrica
   ```
 
 - **Trayectorias en espacio profundo** (más allá de la Luna) desde JPL Horizons:
