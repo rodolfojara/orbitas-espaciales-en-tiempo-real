@@ -31,6 +31,17 @@ python tests/test_basic.py      # comprobación rápida
 Abre `examples/output/trajectory.png` y `time_series.png`. La línea roja marca
 los tramos sin señal: el filtro sigue estimando y la banda ±2σ crece.
 
+### Entradas y resultados reproducibles
+
+```bash
+python examples/run_reproducible_demo.py           # genera los resultados
+python examples/run_reproducible_demo.py --check   # PASS si no cambiaron
+```
+
+Entrada fija: `examples/data/measurements.csv` (1320 mediciones). Salida y tabla
+de resultados: [`examples/output/reproducible/RESULTS.md`](examples/output/reproducible/RESULTS.md).
+El CI ejecuta la comprobación en cada push.
+
 ## ¿Qué quieres ver?
 
 | Objetivo | Comando | Datos |

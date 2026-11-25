@@ -44,6 +44,26 @@ Ejemplo de `examples/output/track.csv` (`señal = NO` → solo propagación del 
 
 `examples/output/track.geojson` se puede abrir directamente en GitHub (se dibuja sobre un mapa).
 
+### Demo reproducible (entradas y resultados fijos)
+
+```bash
+python examples/run_reproducible_demo.py              # genera resultados
+python examples/run_reproducible_demo.py --check      # PASS/FAIL contra la referencia
+python examples/run_reproducible_demo.py --save-expected  # regenera la referencia a propósito
+```
+
+- **Entrada:** `examples/data/measurements.csv`, 1320 filas `t_s, altitude_km, speed_kmh`
+  (semilla 42 del `Scenario`, con tres ventanas sin señal).
+- **Salida:** `examples/output/reproducible/` con `results.csv`, `summary.json`,
+  `RESULTS.md` (tabla legible de entrada y resultados) y `time_series.png`.
+- **Referencia:** `examples/data/reproducible_demo_expected.json` (69 valores).
+- **Comprobación:** compara entrada (SHA-256 incluido), 12 puntos de control y
+  4 métricas, con tolerancia 0.01 para absorber diferencias numéricas de plataforma.
+- El CI ejecuta `--check` en cada push, así que un cambio accidental se detecta solo.
+- Los valores son una **simulación ilustrativa**, no un vuelo real. La propagación
+  extra de 120 s continúa tras el contacto con el suelo: una altitud negativa al
+  final es un artefacto del modelo, no un dato físico.
+
 ### Con tus propias mediciones
 
 CSV con columnas `t_s, altitude_km, speed_kmh` (ver `examples/data/measurements.csv`):

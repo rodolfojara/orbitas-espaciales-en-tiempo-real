@@ -1,0 +1,99 @@
+{
+  "input_file": "measurements.csv",
+  "input_sha256": "8dc27eb2ba414c9d2b4815ea3a9842c419441cf5cb0d11d11bf38260b3dd20e9",
+  "n_measurements": 1320,
+  "n_estimates": 1984,
+  "t_end_s": 1983.0,
+  "checkpoints": [
+    {
+      "t_s": 0,
+      "altitude_km": 0.0,
+      "speed_kms": 0.0,
+      "sigma_alt_km": 0.01,
+      "measured": 0
+    },
+    {
+      "t_s": 120,
+      "altitude_km": 10.439,
+      "speed_kms": 0.1953,
+      "sigma_alt_km": 0.07,
+      "measured": 1
+    },
+    {
+      "t_s": 300,
+      "altitude_km": 49.675,
+      "speed_kms": 1.6942,
+      "sigma_alt_km": 0.115,
+      "measured": 0
+    },
+    {
+      "t_s": 420,
+      "altitude_km": 108.027,
+      "speed_kms": 4.8234,
+      "sigma_alt_km": 1.485,
+      "measured": 0
+    },
+    {
+      "t_s": 850,
+      "altitude_km": 271.359,
+      "speed_kms": 7.2446,
+      "sigma_alt_km": 0.13,
+      "measured": 0
+    },
+    {
+      "t_s": 950,
+      "altitude_km": 279.961,
+      "speed_kms": 7.2339,
+      "sigma_alt_km": 1.53,
+      "measured": 0
+    },
+    {
+      "t_s": 1000,
+      "altitude_km": 279.98,
+      "speed_kms": 7.2339,
+      "sigma_alt_km": 2.579,
+      "measured": 0
+    },
+    {
+      "t_s": 1150,
+      "altitude_km": 262.919,
+      "speed_kms": 7.2551,
+      "sigma_alt_km": 6.742,
+      "measured": 0
+    },
+    {
+      "t_s": 1300,
+      "altitude_km": 228.407,
+      "speed_kms": 7.3585,
+      "sigma_alt_km": 0.123,
+      "measured": 1
+    },
+    {
+      "t_s": 1580,
+      "altitude_km": 102.273,
+      "speed_kms": 7.5161,
+      "sigma_alt_km": 0.13,
+      "measured": 0
+    },
+    {
+      "t_s": 1700,
+      "altitude_km": 33.15,
+      "speed_kms": 2.9726,
+      "sigma_alt_km": 1.087,
+      "measured": 0
+    },
+    {
+      "t_s": 1863,
+      "altitude_km": 0.071,
+      "speed_kms": 0.0909,
+      "sigma_alt_km": 0.04,
+      "measured": 1
+    }
+  ],
+  "metrics": {
+    "max_altitude_error_km": 2.572,
+    "max_sigma_alt_during_dropout_km": 6.742,
+    "final_altitude_km": -10.154,
+    "final_speed_kms": 0.0851
+  }
+}

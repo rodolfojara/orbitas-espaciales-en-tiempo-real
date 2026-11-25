@@ -36,6 +36,9 @@ jobs:
           python examples/run_leo_ground_track.py
           python examples/run_orbit3d.py
 
+      - name: Verify reproducible demo
+        run: python examples/run_reproducible_demo.py --check
+
   wheel-install:
     name: Clean install (wheel)
     runs-on: ubuntu-latest
@@ -73,3 +76,4 @@ jobs:
         run: |
           .venv/bin/python tests/test_basic.py
           .venv/bin/python examples/run_demo.py
+          .venv/bin/python examples/run_reproducible_demo.py --check
