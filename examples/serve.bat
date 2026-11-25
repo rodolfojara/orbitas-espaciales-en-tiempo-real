@@ -1,4 +1,8 @@
 @echo off
 cd /d "%~dp0.."
-"C:\Users\user\AppData\Local\Programs\Python\Python313\python.exe" examples/serve.py
+if exist "%~dp0..\.venv\Scripts\python.exe" (
+    "%~dp0..\.venv\Scripts\python.exe" examples/serve.py
+) else (
+    python examples/serve.py
+)
 pause

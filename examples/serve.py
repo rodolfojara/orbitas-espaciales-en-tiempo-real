@@ -265,8 +265,19 @@ class Handler(SimpleHTTPRequestHandler):
             params = parse_qs(parsed.query)
             name = params.get("name", [""])[0]
             force = params.get("force", ["0"])[0] == "1"
-            result = lookup_full(name, force_refresh=force)
-            body = json.dumps(result).encode()
+            try:
+                result = lookup_full(name, force_refresh=force)
+                body = json.dumps(result).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(body)
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
         elif parsed.path == "/api/deep_search":
             params = parse_qs(parsed.query)
             name = params.get("name", [""])[0]

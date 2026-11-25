@@ -73,10 +73,14 @@ depender de una fuente `sin verificar`, confirma su URL, formato y condiciones d
 
 ```bash
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -e .            # o: pip install -r requirements.txt
+pip install -e .            # paquete + dependencias + comando orbitas-rt
 python examples/run_demo.py # regenera CSV, GeoJSON e imágenes
 python tests/test_basic.py  # pruebas (o: pytest)
 ```
+
+Si solo quieres ejecutar los ejemplos sin instalar el paquete, alcanza con
+`pip install -r requirements.txt`; en ese caso el comando `orbitas-rt` no queda
+instalado. Requiere Python 3.11 o superior (es lo que prueba el CI).
 
 Con tus propias mediciones (CSV con columnas `t_s, altitude_km, speed_kmh`,
 ver `examples/data/measurements.csv`):
