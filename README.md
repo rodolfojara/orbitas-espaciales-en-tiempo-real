@@ -80,6 +80,7 @@ limitado. Ambos casos están etiquetados en la interfaz.
 ## Documentación
 
 - [Todos los comandos y ejemplos](docs/COMANDOS.md)
+- [Qué pruebas existen y qué no está validado](docs/PRUEBAS.md)
 - [Marcos de referencia](docs/COORDINADAS.md)
 - [Fuentes de datos](docs/SOURCES.md)
 - [Estaciones y organismos](docs/TRACKING_ORGANIZATIONS.md)

@@ -13,6 +13,8 @@ pip install -e .            # paquete + dependencias + comando orbitas-rt
 python tests/test_basic.py  # o: pytest
 ```
 
+Inventario de pruebas y huecos de cobertura: [PRUEBAS.md](PRUEBAS.md).
+
 Si solo quieres correr ejemplos sin instalar el paquete: `pip install -r requirements.txt`
 (el comando `orbitas-rt` no queda instalado en ese caso).
 
