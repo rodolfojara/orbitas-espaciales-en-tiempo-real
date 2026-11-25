@@ -35,3 +35,41 @@ jobs:
         run: |
           python examples/run_leo_ground_track.py
           python examples/run_orbit3d.py
+
+  wheel-install:
+    name: Clean install (wheel)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Build and install wheel in a clean venv
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install .
+
+      - name: Verify installed package and bundled data
+        run: |
+          .venv/bin/python - <<'PY'
+          import orbitas_rt
+          import sgp4
+          from orbitas_rt.lookup import search_local
+
+          assert "site-packages" in orbitas_rt.__file__, orbitas_rt.__file__
+          assert len(search_local("voyager")) >= 1, "deep_space.json no incluido en el wheel"
+          assert len(search_local("apollo")) >= 1, "lost_objects.json no incluido en el wheel"
+          print("wheel OK:", orbitas_rt.__file__)
+          PY
+
+      - name: Verify CLI entry point
+        run: .venv/bin/orbitas-rt sources --mission starship
+
+      - name: Smoke tests with the installed wheel
+        run: |
+          .venv/bin/python tests/test_basic.py
+          .venv/bin/python examples/run_demo.py
